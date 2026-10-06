@@ -51,24 +51,12 @@
 
 ---
 
-## 🚀 部署上線指引
+## 🚀 線上體驗與 GitHub 儲存庫
 
-本專案為純靜態單頁應用（SPA），可免費部署至任何靜態託管平台：
+* **線上直接體驗網址**：[https://yoyo114415-lang.github.io/eating-roulette/](https://yoyo114415-lang.github.io/eating-roulette/)
+* **GitHub 專案儲存庫**：[https://github.com/yoyo114415-lang/eating-roulette](https://github.com/yoyo114415-lang/eating-roulette)
 
-### 部署至 GitHub Pages
-1. 在 GitHub 建立新儲存庫（Repository）。
-2. 將本目錄檔案上傳或推送至儲存庫：
-   ```bash
-   git init
-   git add .
-   git commit -m "feat: 初版日系吃飯轉盤完成"
-   git branch -M main
-   git remote add origin <你的GitHub專案網址>
-   git push -u origin main
-   ```
-3. 進入 GitHub 儲存庫的 **Settings** -> **Pages**。
-4. 在「Branch」選擇 `main`，資料夾選擇 `/ (root)`，點擊 **Save**。
-5. 稍等約 1 分鐘即可取得公開線上網址！
+---
 
 ---
 
