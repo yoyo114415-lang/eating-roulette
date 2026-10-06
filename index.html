@@ -78,26 +78,17 @@
     </section>
 
     <!-- 控制工具卡片 (距離滑桿與 GPS 定位狀態) -->
+    <!-- 定位狀態與搜尋模式列 (不限距離模式) -->
     <section class="control-card">
-      <div class="radius-control-row">
-        <span class="control-label">
-          <span>📏</span> 搜尋半徑範圍
-        </span>
-        <span id="radiusBadge" class="radius-badge">1.0 公里</span>
-      </div>
-      <div class="slider-wrapper">
-        <span class="slider-bound">500m</span>
-        <input type="range" id="radiusSlider" class="range-slider" min="500" max="3000" step="100" value="1000" aria-label="搜尋距離範圍滑桿">
-        <span class="slider-bound">3km</span>
-      </div>
-
-      <!-- 定位狀態顯示 -->
-      <div class="location-status-row">
+      <div class="location-status-row" style="border-top: none; padding-top: 0;">
         <div class="location-indicator">
           <span id="locationStatusDot" class="status-dot"></span>
           <span id="locationStatusText">正在確認 GPS 定位...</span>
         </div>
-        <button id="reLocateBtn" class="re-locate-btn">重新定位</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="radius-badge" style="background: #FAF4EB; color: #B88B58; border: 1px solid #EADBC8;">不限距離 · 由近到遠</span>
+          <button id="reLocateBtn" class="re-locate-btn">重新定位</button>
+        </div>
       </div>
     </section>
 

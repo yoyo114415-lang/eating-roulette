@@ -43,8 +43,8 @@ const State = {
   // 使用者座標
   userLocation: null, // { lat: number, lon: number }
   isLocating: false,
-  // 搜尋半徑 (公尺)
-  radius: 1000,
+  // 搜尋半徑 (不限距離模式：預設 25 公里大範圍，嚴格依距離由近到遠排序)
+  radius: 25000,
   // 歷史紀錄資料庫 key
   STORAGE_HISTORY_KEY: "eating_history_records_v1",
   STORAGE_CUSTOM_ITEMS_KEY: "eating_custom_items_v1",
@@ -663,6 +663,15 @@ function renderRestaurantCards(restaurants, category) {
     const card = document.createElement("div");
     card.className = "restaurant-card";
 
+    // 點擊店家名稱或卡片直接跳轉 Google Maps
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name + ' ' + r.lat + ',' + r.lon)}`;
+    card.title = "點擊開啟 Google Maps 查看店家評價與路線";
+    card.onclick = (e) => {
+      // 避免點擊「記錄這餐」按鈕時誤跳轉
+      if (e.target.closest(".record-eat-btn")) return;
+      window.open(googleMapsUrl, "_blank", "noopener,noreferrer");
+    };
+
     // 頂部列
     const topRow = document.createElement("div");
     topRow.className = "card-top-row";
@@ -673,7 +682,20 @@ function renderRestaurantCards(restaurants, category) {
     const nameEl = document.createElement("div");
     nameEl.className = "restaurant-name";
     nameEl.textContent = r.name; // 原生安全防護
+
+    // 加入 ↗ 外連圖示
+    const linkIcon = document.createElement("span");
+    linkIcon.style.fontSize = "13px";
+    linkIcon.style.color = "#4285F4";
+    linkIcon.textContent = " ↗";
+    nameEl.appendChild(linkIcon);
     titleArea.appendChild(nameEl);
+
+    // 點擊提示文字
+    const hintText = document.createElement("div");
+    hintText.className = "card-jump-hint";
+    hintText.textContent = "點擊查看 Google Maps 地圖評價與路線 ↗";
+    titleArea.appendChild(hintText);
 
     const badgesArea = document.createElement("div");
     badgesArea.className = "restaurant-badges";
@@ -715,6 +737,7 @@ function renderRestaurantCards(restaurants, category) {
     mapBtn.target = "_blank";
     mapBtn.rel = "noopener noreferrer";
     mapBtn.href = `https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lon}`;
+    mapBtn.onclick = (e) => e.stopPropagation();
     
     const navIcon = document.createElement("span");
     navIcon.textContent = "🧭 ";
@@ -742,7 +765,8 @@ function renderRestaurantCards(restaurants, category) {
     eatBtn.appendChild(eatIcon);
     eatBtn.appendChild(eatText);
 
-    eatBtn.onclick = () => {
+    eatBtn.onclick = (e) => {
+      e.stopPropagation(); // 阻止卡片冒泡跳轉
       HistoryManager.addRecord(r.name, category);
       eatBtn.classList.add("already-eaten");
       eatBtn.textContent = "";
@@ -1047,15 +1071,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 綁定旋轉按鈕
   document.getElementById("centerSpinBtn").onclick = () => spinRoulette();
-
-  // 綁定距離滑桿
-  const radiusSlider = document.getElementById("radiusSlider");
-  const radiusBadge = document.getElementById("radiusBadge");
-  radiusSlider.addEventListener("input", (e) => {
-    const val = parseInt(e.target.value, 10);
-    State.radius = val;
-    radiusBadge.textContent = (val / 1000).toFixed(1) + " 公里";
-  });
 
   // 綁定重新定位按鈕
   document.getElementById("reLocateBtn").onclick = () => initLocation();

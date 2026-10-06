@@ -511,7 +511,7 @@ body {
   gap: 10px;
 }
 
-/* 單個餐廳卡片 */
+/* 單個餐廳卡片 (點擊整張卡片或資訊直接跳轉 Google Maps) */
 .restaurant-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
@@ -521,12 +521,29 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: all 0.2s ease;
   position: relative;
+  cursor: pointer;
+}
+
+.restaurant-card:hover {
+  border-color: var(--accent-wood);
+  box-shadow: 0 4px 16px rgba(184, 139, 88, 0.15);
 }
 
 .restaurant-card:active {
-  transform: translateY(1px);
+  transform: scale(0.985);
+  background: #FAF8F5;
+}
+
+.card-jump-hint {
+  font-size: 11px;
+  color: #1A73E8;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 500;
+  margin-top: 2px;
 }
 
 .card-top-row {
