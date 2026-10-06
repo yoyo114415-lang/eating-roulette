@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#FAF8F5">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="吃飯轉盤">
+  <title>今日吃什麼 - 日系吃飯轉盤</title>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23FBF9F5' stroke='%23C49A6C' stroke-width='6'/><text x='50' y='65' font-size='42' text-anchor='middle' fill='%23C84B31' font-family='serif' font-weight='bold'>食</text></svg>">
+  
+  <!-- 樣式表 -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- 頂部導覽列 -->
+    <header class="app-header">
+      <div class="brand-area">
+        <div class="brand-stamp">食</div>
+        <div class="brand-titles">
+          <span class="brand-subtitle">今日のごはん</span>
+          <h1 class="brand-title">吃飯轉盤</h1>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- 歷史紀錄按鈕 -->
+        <button id="openHistoryBtn" class="icon-btn" title="查看 3 天用餐紀錄" aria-label="歷史紀錄">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </button>
+        <!-- 自訂品項按鈕 -->
+        <button id="openSettingsBtn" class="icon-btn" title="自訂轉盤品項" aria-label="轉盤設定">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="21" x2="4" y2="14"></line>
+            <line x1="4" y1="10" x2="4" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12" y2="3"></line>
+            <line x1="20" y1="21" x2="20" y2="16"></line>
+            <line x1="20" y1="12" x2="20" y2="3"></line>
+            <line x1="1" y1="14" x2="7" y2="14"></line>
+            <line x1="9" y1="8" x2="15" y2="8"></line>
+            <line x1="17" y1="16" x2="23" y2="16"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 轉盤舞台 -->
+    <section class="roulette-section">
+      <!-- 和風指針 -->
+      <div id="wheelPointer" class="wheel-pointer">
+        <svg viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 40L4 12C2 7 6 2 11 2H21C26 2 30 7 28 12L16 40Z" fill="#C84B31"/>
+          <circle cx="16" cy="10" r="4" fill="#FFFFFF"/>
+        </svg>
+      </div>
+
+      <!-- 轉盤外環與畫布 -->
+      <div class="wheel-outer-frame">
+        <canvas id="wheelCanvas"></canvas>
+        <!-- 中心旋轉觸發按鈕 -->
+        <button id="centerSpinBtn" class="center-spin-btn" aria-label="旋轉轉盤">
+          <span class="spin-kanji">回</span>
+          <span class="spin-subtext">旋轉</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- 控制工具卡片 (距離滑桿與 GPS 定位狀態) -->
+    <section class="control-card">
+      <div class="radius-control-row">
+        <span class="control-label">
+          <span>📏</span> 搜尋半徑範圍
+        </span>
+        <span id="radiusBadge" class="radius-badge">1.0 公里</span>
+      </div>
+      <div class="slider-wrapper">
+        <span class="slider-bound">500m</span>
+        <input type="range" id="radiusSlider" class="range-slider" min="500" max="3000" step="100" value="1000" aria-label="搜尋距離範圍滑桿">
+        <span class="slider-bound">3km</span>
+      </div>
+
+      <!-- 定位狀態顯示 -->
+      <div class="location-status-row">
+        <div class="location-indicator">
+          <span id="locationStatusDot" class="status-dot"></span>
+          <span id="locationStatusText">正在確認 GPS 定位...</span>
+        </div>
+        <button id="reLocateBtn" class="re-locate-btn">重新定位</button>
+      </div>
+    </section>
+
+    <!-- 抽中結果展示區 (動態呈現) -->
+    <section id="resultContainer" style="display: none;"></section>
+
+    <!-- 周邊餐廳清單區 -->
+    <section id="restaurantsSection" class="restaurants-section" style="display: none;">
+      <div class="section-header-row">
+        <h3 class="section-title">
+          <span>🥢</span> 周邊推薦店家
+        </h3>
+        <span id="searchCount" class="search-count"></span>
+      </div>
+      <div id="restaurantList" class="restaurant-list"></div>
+    </section>
+  </div>
+
+  <!-- 歷史紀錄底層彈窗 (Modal Sheet) -->
+  <div id="historyModal" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span>📜</span> 3 天內用餐履歷
+        </h3>
+        <button id="closeHistoryBtn" class="close-btn" aria-label="關閉彈窗">✕</button>
+      </div>
+      <div id="historyListContainer" class="modal-body"></div>
+      <div class="modal-footer">
+        <span style="font-size: 11px; color: #7E766D;">自動記錄近 3 天吃過的餐廳</span>
+        <button id="clearHistoryBtn" class="btn-clear-history">清除所有紀錄</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 自訂品項管理底層彈窗 (Modal Sheet) -->
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <span>⚙️</span> 轉盤品項設定 (勾選啟用)
+        </h3>
+        <button id="closeSettingsBtn" class="close-btn" aria-label="關閉彈窗">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="settingsItemsContainer" class="items-grid"></div>
+        <div class="add-item-row">
+          <input type="text" id="newCustomItemInput" class="text-input" placeholder="新增自訂美食（例如：海南雞飯）" maxlength="8">
+          <button id="addCustomItemBtn" class="btn-add">新增</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span style="font-size: 11px; color: #7E766D;">點擊品項切換啟用 / 停用</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 浮動提示 Toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- 主邏輯程式碼 -->
+  <script src="app.js"></script>
+</body>
+</html>
