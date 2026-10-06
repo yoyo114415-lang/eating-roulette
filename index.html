@@ -13,6 +13,9 @@
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23FBF9F5' stroke='%23C49A6C' stroke-width='6'/><text x='50' y='65' font-size='42' text-anchor='middle' fill='%23C84B31' font-family='serif' font-weight='bold'>食</text></svg>">
   
+  <!-- 現代安全防禦：Content Security Policy (嚴防 XSS、惡意腳本注入與未授權外連) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://overpass-api.de; img-src 'self' data: https:; object-src 'none'; base-uri 'self';">
+
   <!-- 樣式表 -->
   <link rel="stylesheet" href="style.css">
 </head>
