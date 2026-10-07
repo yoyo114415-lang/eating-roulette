@@ -890,18 +890,18 @@ function renderRestaurantCards(restaurants, category) {
   const heroInfo = document.createElement("div");
   heroInfo.style.display = "flex";
   heroInfo.style.flexDirection = "column";
-  heroInfo.style.gap = "2px";
+  heroInfo.style.gap = "3px";
 
   const heroTitle = document.createElement("div");
   heroTitle.style.fontSize = "13px";
   heroTitle.style.fontWeight = "700";
   heroTitle.style.color = "#7A5123";
-  heroTitle.textContent = `🌟 在 Google Maps 查看附近所有【${category}】`;
+  heroTitle.textContent = `🌟 開啟 Google Maps 周邊【${category}】人氣排行榜 ↗`;
 
   const heroSub = document.createElement("div");
   heroSub.style.fontSize = "11px";
   heroSub.style.color = "#8C827A";
-  heroSub.textContent = "即時顯示各店家星級評分、評論數、照片與營業時間";
+  heroSub.textContent = "查看 Google 官方推薦的網友高評分、最新熱門榜與營業時間";
 
   heroInfo.appendChild(heroTitle);
   heroInfo.appendChild(heroSub);
@@ -989,7 +989,7 @@ function renderRestaurantCards(restaurants, category) {
     // 點擊提示文字
     const hintText = document.createElement("div");
     hintText.className = "card-jump-hint";
-    hintText.textContent = "點擊查看 Google Maps 地圖評價與路線 ↗";
+    hintText.textContent = "點擊查看 Google Maps 評價與營業時間 ↗";
     titleArea.appendChild(hintText);
 
     const badgesArea = document.createElement("div");
@@ -998,7 +998,7 @@ function renderRestaurantCards(restaurants, category) {
     // 評價金黃標籤
     const ratingBadge = document.createElement("span");
     ratingBadge.className = "rating-badge";
-    ratingBadge.textContent = "⭐ Google 評價 · 點擊查看";
+    ratingBadge.textContent = "⭐ 查看 Google 評分與營業中狀態";
     badgesArea.appendChild(ratingBadge);
 
     // 檢查該餐廳在 3 天內是否已吃過
