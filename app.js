@@ -520,48 +520,48 @@ function formatDistance(meters) {
 // ==========================================================================
 const CATEGORY_SEARCH_MAP = {
   "便當": {
-    queries: ["便當", "排骨飯", "快餐", "燒臘", "池上", "正忠", "悟饕", "知高飯"],
-    matches: ["便當", "快餐", "燒臘", "排骨", "飯包", "餐盒", "池上", "正忠", "悟饕", "知高", "控肉", "爌肉", "便當店", "梁社漢"],
+    queries: ["便當", "排骨", "快餐", "燒臘", "池上", "正忠", "悟饕", "梁社漢"],
+    matches: ["便當", "快餐", "燒臘", "排骨", "飯包", "餐盒", "池上", "正忠", "悟饕", "知高", "控肉", "爌肉", "便當店", "梁社漢", "金仙"],
     excludes: ["咖啡", "甜點", "飲料", "手搖", "麵包", "早午餐", "火鍋", "冰品", "豆花"]
   },
   "定食": {
-    queries: ["定食", "日式定食", "日式料理", "大戶屋", "定食8"],
-    matches: ["定食", "日式", "和食", "料理", "食堂", "丼", "日料", "大戶屋", "定食8", "日本料理"],
+    queries: ["定食", "日式定食", "日式料理", "大戶屋", "定食8", "勝博殿"],
+    matches: ["定食", "和食", "料理", "食堂", "丼", "日料", "大戶屋", "定食8", "日本料理", "勝博殿", "福勝亭"],
     excludes: ["咖啡", "甜點", "飲料", "麵包", "早午餐", "早餐", "手搖"]
   },
   "炒飯": {
-    queries: ["炒飯", "熱炒", "炒飯專賣", "快炒"],
+    queries: ["炒飯", "熱炒", "炒館", "快炒"],
     matches: ["炒飯", "熱炒", "快炒", "小吃", "炒館", "炒麵炒飯"],
     excludes: ["咖啡", "甜點", "飲料", "麵包", "早午餐", "義大利麵", "披薩"]
   },
   "炒麵": {
-    queries: ["炒麵", "鱔魚意麵", "台式炒麵", "熱炒"],
+    queries: ["炒麵", "意麵", "鱔魚", "熱炒"],
     matches: ["炒麵", "鱔魚", "意麵", "熱炒", "快炒", "炒館"],
     excludes: ["咖啡", "甜點", "飲料", "麵包", "早午餐", "漢堡"]
   },
   "牛肉麵": {
-    queries: ["牛肉麵", "三商巧福", "牛肉麵館", "刀削牛肉麵"],
-    matches: ["牛肉麵", "牛肉", "刀削", "麵食", "清燉牛肉", "紅燒牛肉", "老張", "段純貞", "三商巧福"],
+    queries: ["牛肉麵", "牛肉", "刀削牛肉麵", "三商巧福"],
+    matches: ["牛肉麵", "牛肉", "刀削", "麵食", "清燉牛肉", "紅燒牛肉", "老張", "段純貞", "三商巧福", "牛肉館"],
     excludes: ["咖啡", "甜點", "飲料", "麵包", "披薩", "漢堡", "早午餐", "冰品"]
   },
   "拉麵": {
-    queries: ["拉麵", "日式拉麵", "豚骨拉麵"],
-    matches: ["拉麵", "ラーメン", "豚骨", "雞白湯", "沾麵", "一蘭", "花月嵐", "屯京", "隱家", "麵屋"],
+    queries: ["拉麵", "ラーメン", "豚骨", "麵屋"],
+    matches: ["拉麵", "ラーメン", "豚骨", "雞白湯", "沾麵", "一蘭", "花月嵐", "屯京", "隱家", "麵屋", "鳥人"],
     excludes: ["咖啡", "甜點", "飲料", "麵包", "火鍋", "早午餐", "牛肉麵"]
   },
   "義大利麵": {
-    queries: ["義大利麵", "Pasta", "義式料理", "義麵"],
-    matches: ["義大利麵", "義式", "Pasta", "義麵", "斜管麵", "Spaghetti"],
+    queries: ["Pasta", "義大利麵", "義式料理", "義麵"],
+    matches: ["義大利麵", "義式", "Pasta", "義麵", "斜管麵", "Spaghetti", "pasta"],
     excludes: ["牛肉麵", "拉麵", "陽春麵", "手搖", "甜點", "麵包", "便當", "熱炒"]
   },
   "咖哩飯": {
-    queries: ["咖哩", "日式咖哩", "熟成咖哩", "魔法咖哩", "CoCo壹番屋"],
-    matches: ["咖哩", "カレー", "Curry", "咖喱", "壹番屋"],
+    queries: ["咖哩", "カレー", "Curry", "咖喱"],
+    matches: ["咖哩", "カレー", "Curry", "咖喱", "壹番屋", "curry"],
     excludes: ["火鍋", "甜點", "手搖", "麵包", "水餃", "熱炒"]
   },
   "丼飯": {
-    queries: ["丼", "すき家", "吉野家", "松屋", "牛丼", "燒肉丼"],
-    matches: ["丼", "どんぶり", "吉野家", "すき家", "Sukiya", "松屋", "燒肉丼", "親子丼"],
+    queries: ["丼", "すき家", "吉野家", "燒肉丼"],
+    matches: ["丼", "どんぶり", "吉野家", "すき家", "Sukiya", "sukiya", "松屋", "燒肉丼", "親子丼"],
     excludes: ["咖啡", "甜點", "手搖", "麵包", "火鍋", "水餃"]
   },
   "火鍋": {
@@ -571,52 +571,52 @@ const CATEGORY_SEARCH_MAP = {
   },
   "鐵板燒": {
     queries: ["鐵板", "大埔鐵板燒", "鐵板燒", "Teppanyaki"],
-    matches: ["鐵板", "鐵板燒", "大埔", "犇", "teppanyaki"],
+    matches: ["鐵板", "鐵板燒", "大埔", "犇", "teppanyaki", "Teppanyaki"],
     excludes: ["火鍋", "拉麵", "咖啡", "甜點", "手搖", "麵包"]
   },
   "滷肉飯": {
     queries: ["滷肉", "魯肉", "肉燥飯", "滷肉飯"],
-    matches: ["滷肉飯", "魯肉飯", "肉燥飯", "小吃", "魯肉", "滷肉", "鬍鬚張", "金峰"],
+    matches: ["滷肉飯", "魯肉飯", "肉燥飯", "小吃", "魯肉", "滷肉", "鬍鬚張", "金峰", "肉燥"],
     excludes: ["義大利麵", "披薩", "漢堡", "拉麵", "咖啡", "甜點", "手搖"]
   },
   "雞肉飯": {
     queries: ["雞肉", "火雞肉飯", "雞肉飯", "梁社漢"],
-    matches: ["雞肉飯", "火雞肉飯", "火雞肉", "雞肉", "梁社漢"],
+    matches: ["雞肉飯", "火雞肉飯", "火雞肉", "雞肉", "梁社漢", "海南雞"],
     excludes: ["咖啡", "甜點", "手搖", "披薩", "漢堡", "拉麵"]
   },
   "鴨肉飯": {
     queries: ["鴨肉", "當歸鴨", "鴨肉飯", "鴨肉羹"],
-    matches: ["鴨肉", "當歸鴨", "鴨肉羹", "鴨莊", "鴨肉麵", "鴨肉冬粉", "鴨肉扁", "鴨肉珍", "鴨肉富", "鴨肉店"],
+    matches: ["鴨肉", "當歸鴨", "鴨肉羹", "鴨莊", "鴨肉麵", "鴨肉冬粉", "鴨肉扁", "鴨肉珍", "鴨肉富", "鴨肉店", "鴨"],
     excludes: ["咖啡", "甜點", "手搖", "披薩", "漢堡", "拉麵"]
   },
   "健康餐": {
-    queries: ["健康餐", "少點鹽", "能量小姐", "隨主飡", "低卡便當", "舒肥便當", "水煮餐"],
-    matches: ["健康餐", "低卡", "舒肥", "水煮", "低GI", "蛋白", "少油低卡", "能量盒", "健康便當", "少點鹽", "能量小姐", "隨主飡", "健康餐盒"],
+    queries: ["健康餐", "少點鹽", "能量小姐", "隨主飡", "低卡便當", "舒肥", "水煮餐"],
+    matches: ["健康餐", "低卡", "舒肥", "水煮", "低GI", "蛋白", "少油低卡", "能量盒", "健康便當", "少點鹽", "能量小姐", "隨主飡", "健康餐盒", "低gi"],
     excludes: ["油炸", "火鍋", "甜點", "手搖", "咖啡", "炸雞", "飲料"]
   },
   "水餃": {
     queries: ["水餃", "八方雲集", "四海遊龍", "鍋貼", "餃子"],
-    matches: ["水餃", "餃子", "鍋貼", "八方雲集", "四海遊龍", "水餃館", "蒸餃", "餃"],
+    matches: ["水餃", "餃子", "鍋貼", "八方雲集", "四海遊龍", "水餃館", "蒸餃", "餃", "煎餃"],
     excludes: ["咖啡", "甜點", "手搖", "五金", "服飾", "義大利麵", "漢堡"]
   },
   "早午餐": {
     queries: ["早午", "Brunch", "早午餐", "早餐店"],
-    matches: ["早午", "早午餐", "brunch", "早餐", "晨間", "麥味登", "弘爺", "拉亞", "美芝城", "吐司", "三明治", "碳烤吐司"],
+    matches: ["早午", "早午餐", "brunch", "Brunch", "早餐", "晨間", "麥味登", "弘爺", "拉亞", "美芝城", "吐司", "三明治", "碳烤吐司", "美而美"],
     excludes: ["熱炒", "火鍋", "燒烤", "便當", "鐵板燒", "牛肉麵"]
   },
   "壽司": {
     queries: ["壽司", "爭鮮", "藏壽司", "壽司郎", "迴轉壽司"],
-    matches: ["壽司", "すし", "Sushi", "爭鮮", "壽司郎", "藏壽司", "くら寿司", "握壽司", "日式料理", "生魚片"],
+    matches: ["壽司", "すし", "Sushi", "sushi", "爭鮮", "壽司郎", "藏壽司", "くら寿司", "握壽司", "日式料理", "生魚片"],
     excludes: ["咖啡", "甜點", "手搖", "麵包", "牛肉麵", "火鍋", "便當"]
   },
   "漢堡": {
     queries: ["漢堡", "麥當勞", "肯德基", "摩斯漢堡", "漢堡王", "SUBWAY"],
-    matches: ["漢堡", "Burger", "麥當勞", "肯德基", "摩斯漢堡", "漢堡王", "SUBWAY", "美式"],
+    matches: ["漢堡", "Burger", "burger", "麥當勞", "肯德基", "摩斯漢堡", "漢堡王", "SUBWAY", "subway", "美式"],
     excludes: ["水餃", "火鍋", "滷肉飯", "牛肉麵", "熱炒", "便當"]
   },
   "披薩": {
     queries: ["披薩", "必勝客", "達美樂", "拿坡里", "Pizza"],
-    matches: ["披薩", "比薩", "Pizza", "必勝客", "達美樂", "拿坡里", "窯烤披薩"],
+    matches: ["披薩", "比薩", "Pizza", "pizza", "必勝客", "達美樂", "拿坡里", "窯烤披薩"],
     excludes: ["火鍋", "拉麵", "牛肉麵", "滷肉飯", "便當", "甜點", "手搖"]
   }
 };
@@ -666,8 +666,10 @@ function matchesCategoryPrecision(rawName, displayName, category, item) {
   // 2. 通用排除名單（純手搖店、便利超商、醫療院所、五金等非正餐雜質）
   const commonExcludes = [
     "50嵐", "五十嵐", "清心福全", "麻古茶坊", "迷客夏", "可不可熟成紅茶", "茶湯會", "珍煮丹", "烏弄",
-    "7-eleven", "7-11", "全家便利", "萊爾富", "ok便利", "全聯", "家樂福",
-    "藥局", "診所", "中醫", "眼科", "牙醫", "彩券", "機車行", "汽車修配", "五金行", "迪卡儂"
+    "得正", "一沐日", "五桐號", "龜記", "再睡5分鐘", "先喝道", "大苑子", "CoCo都可", "鮮茶道",
+    "7-eleven", "7-11", "全家便利", "萊爾富", "ok便利", "全聯", "家樂福", "美廉社",
+    "藥局", "診所", "中醫", "眼科", "牙醫", "彩券", "機車行", "汽車修配", "五金行", "迪卡儂",
+    "屈臣氏", "康是美", "寶雅", "蝦皮店到店"
   ];
   if (commonExcludes.some(ex => fullName.includes(ex.toLowerCase()))) {
     return false;
@@ -683,12 +685,16 @@ function matchesCategoryPrecision(rawName, displayName, category, item) {
     return false;
   }
 
-  // 4. 特徵詞吻合驗證（Must Match）：店名必須命中該料理特徵或代表品牌，徹底消除無關選項
+  // 4. 特徵詞吻合驗證（Must Match）：店名或餐飲標籤必須命中該料理特徵或代表品牌，徹底消除無關選項
   if (rule.matches && rule.matches.length > 0) {
     const rawLower = rawName.toLowerCase();
-    const hit = rule.matches.some(m => rawLower.includes(m.toLowerCase()) || fullName.includes(m.toLowerCase()));
+    const cuisineTag = (item && item.extratags && item.extratags.cuisine ? item.extratags.cuisine.toLowerCase() : "");
+    const hit = rule.matches.some(m => {
+      const mLow = m.toLowerCase();
+      return rawLower.includes(mLow) || (cuisineTag && cuisineTag.includes(mLow));
+    });
     if (!hit) {
-      return false; // 店名不相干者剔除
+      return false; // 店名與餐飲標籤皆不相干者剔除
     }
   }
 
@@ -702,6 +708,12 @@ function getMatchedFeatureKeyword(rawName, category) {
   const rawLower = rawName.toLowerCase();
   for (const m of rule.matches) {
     if (rawLower.includes(m.toLowerCase())) {
+      if (m === "早午") return "早午餐";
+      if (m === "鐵板") return "鐵板燒";
+      if (m === "牛肉") return "牛肉料理";
+      if (m === "鴨肉") return "鴨肉料理";
+      if (m === "雞肉") return "雞肉料理";
+      if (m === "滷肉" || m === "魯肉") return "滷肉飯";
       return m;
     }
   }
@@ -806,11 +818,14 @@ async function searchNearbyRestaurants(category) {
   const validRestaurants = [];
 
   try {
-    // 1. 同時並行查詢前 4 個熱門核心關鍵字，大幅提高命中率與完整度
+    // 1. 同時並行查詢前 4 個熱門核心關鍵字，大幅提高命中率與完整度 (採用 Promise.allSettled 確保高容錯)
     const searchPromises = queryList.slice(0, 4).map(term => 
       fetchNominatimPlaces(term, viewbox, controller.signal)
     );
-    const searchResultsArrays = await Promise.all(searchPromises);
+    const settledResults = await Promise.allSettled(searchPromises);
+    const searchResultsArrays = settledResults
+      .filter(r => r.status === "fulfilled" && Array.isArray(r.value))
+      .map(r => r.value);
 
     for (const dataList of searchResultsArrays) {
       for (const item of dataList) {
