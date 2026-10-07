@@ -521,57 +521,57 @@ function formatDistance(meters) {
 // ==========================================================================
 const CATEGORY_SEARCH_MAP = {
   "便當": {
-    queries: ["便當", "快餐", "排骨飯", "知高飯"],
-    matches: ["便當", "快餐", "燒臘", "排骨", "飯包", "餐盒", "池上", "正忠", "悟饕", "知高", "控肉", "爌肉", "便當店"],
+    queries: ["便當", "排骨飯", "快餐", "燒臘", "池上", "正忠", "悟饕", "知高飯"],
+    matches: ["便當", "快餐", "燒臘", "排骨", "飯包", "餐盒", "池上", "正忠", "悟饕", "知高", "控肉", "爌肉", "便當店", "梁社漢"],
     excludes: ["咖啡", "甜點", "飲料", "手搖", "麵包", "早午餐", "火鍋", "冰品", "豆花"]
   },
   "定食": {
-    queries: ["定食", "日式定食", "日式料理"],
+    queries: ["定食", "日式定食", "日式料理", "大戶屋", "定食8"],
     matches: ["定食", "日式", "和食", "料理", "食堂", "丼", "日料", "大戶屋", "定食8", "日本料理"],
     excludes: ["咖啡", "甜點", "飲料", "麵包", "早午餐", "早餐", "手搖"]
   },
   "炒飯": {
-    queries: ["炒飯", "熱炒", "炒麵炒飯"],
-    matches: ["炒飯", "熱炒", "快炒", "小吃", "炒館"],
+    queries: ["炒飯", "熱炒", "炒飯專賣", "快炒"],
+    matches: ["炒飯", "熱炒", "快炒", "小吃", "炒館", "炒麵炒飯"],
     excludes: ["咖啡", "甜點", "飲料", "麵包", "早午餐", "義大利麵", "披薩"]
   },
   "炒麵": {
-    queries: ["炒麵", "鱔魚意麵", "台式炒麵"],
+    queries: ["炒麵", "鱔魚意麵", "台式炒麵", "熱炒"],
     matches: ["炒麵", "鱔魚", "意麵", "熱炒", "快炒", "炒館"],
     excludes: ["咖啡", "甜點", "飲料", "麵包", "早午餐", "漢堡"]
   },
   "牛肉麵": {
-    queries: ["牛肉麵", "牛肉麵館"],
+    queries: ["牛肉麵", "三商巧福", "牛肉麵館", "刀削牛肉麵"],
     matches: ["牛肉麵", "牛肉", "刀削", "麵食", "清燉牛肉", "紅燒牛肉", "老張", "段純貞", "三商巧福"],
     excludes: ["咖啡", "甜點", "飲料", "麵包", "披薩", "漢堡", "早午餐", "冰品"]
   },
   "拉麵": {
-    queries: ["拉麵", "日式拉麵"],
+    queries: ["拉麵", "日式拉麵", "豚骨拉麵"],
     matches: ["拉麵", "ラーメン", "豚骨", "雞白湯", "沾麵", "一蘭", "花月嵐", "屯京", "隱家", "麵屋"],
     excludes: ["咖啡", "甜點", "飲料", "麵包", "火鍋", "早午餐", "牛肉麵"]
   },
   "烏龍麵": {
-    queries: ["烏龍麵", "手打烏龍"],
+    queries: ["烏龍麵", "丸亀", "丸龜製麵", "手打烏龍"],
     matches: ["烏龍麵", "烏龍", "うどん", "丸亀", "丸龜", "讚岐"],
     excludes: ["咖啡", "甜點", "飲料", "麵包", "早午餐", "手搖"]
   },
   "義大利麵": {
-    queries: ["義大利麵", "義式餐廳", "Pasta"],
+    queries: ["義大利麵", "Pasta", "義式料理"],
     matches: ["義大利麵", "義式", "Pasta", "義麵", "斜管麵", "Spaghetti"],
     excludes: ["牛肉麵", "拉麵", "陽春麵", "手搖", "甜點", "麵包", "便當", "熱炒"]
   },
   "燉飯": {
-    queries: ["燉飯", "義式燉飯", "Risotto"],
+    queries: ["燉飯", "Risotto", "義式燉飯"],
     matches: ["燉飯", "義式", "Risotto", "Pasta", "義大利麵"],
     excludes: ["便當", "牛肉麵", "拉麵", "咖啡", "甜點", "手搖", "熱炒"]
   },
   "咖哩飯": {
-    queries: ["咖哩", "日式咖哩", "熟成咖哩"],
+    queries: ["咖哩", "日式咖哩", "熟成咖哩", "魔法咖哩"],
     matches: ["咖哩", "カレー", "Curry", "咖喱"],
     excludes: ["火鍋", "甜點", "手搖", "麵包", "水餃", "熱炒"]
   },
   "丼飯": {
-    queries: ["丼飯", "日式丼飯", "牛丼"],
+    queries: ["丼", "すき家", "吉野家", "松屋", "牛丼"],
     matches: ["丼", "どんぶり", "吉野家", "すき家", "Sukiya", "松屋", "燒肉丼", "親子丼"],
     excludes: ["咖啡", "甜點", "手搖", "麵包", "火鍋", "水餃"]
   },
@@ -581,57 +581,57 @@ const CATEGORY_SEARCH_MAP = {
     excludes: ["火鍋", "甜點", "手搖", "麵包", "水餃", "拉麵"]
   },
   "火鍋": {
-    queries: ["火鍋", "小火鍋", "涮涮鍋", "麻辣鍋"],
-    matches: ["火鍋", "小火鍋", "鍋物", "涮涮鍋", "麻辣", "石頭火鍋", "鍋", "石二鍋", "六扇門", "錢都", "築間", "肉多多"],
+    queries: ["火鍋", "小火鍋", "石二鍋", "六扇門", "錢都", "三媽", "涮涮鍋"],
+    matches: ["火鍋", "小火鍋", "鍋物", "涮涮鍋", "麻辣", "石頭火鍋", "鍋", "石二鍋", "六扇門", "錢都", "築間", "肉多多", "三媽"],
     excludes: ["咖啡", "甜點", "手搖", "麵包", "早午餐", "漢堡", "拉麵"]
   },
   "鐵板燒": {
-    queries: ["鐵板燒", "平價鐵板燒"],
+    queries: ["鐵板燒", "大埔鐵板燒", "平價鐵板燒"],
     matches: ["鐵板燒", "鐵板", "大埔", "犇"],
     excludes: ["火鍋", "拉麵", "咖啡", "甜點", "手搖", "麵包"]
   },
   "滷肉飯": {
-    queries: ["滷肉飯", "魯肉飯", "肉燥飯"],
+    queries: ["滷肉飯", "魯肉飯", "肉燥飯", "鬍鬚張"],
     matches: ["滷肉飯", "魯肉飯", "肉燥飯", "小吃", "魯肉", "滷肉", "鬍鬚張"],
     excludes: ["義大利麵", "披薩", "漢堡", "拉麵", "咖啡", "甜點", "手搖"]
   },
   "雞肉飯": {
-    queries: ["雞肉飯", "火雞肉飯"],
-    matches: ["雞肉飯", "火雞肉飯", "火雞肉", "雞肉"],
+    queries: ["雞肉飯", "火雞肉飯", "梁社漢"],
+    matches: ["雞肉飯", "火雞肉飯", "火雞肉", "雞肉", "梁社漢"],
     excludes: ["咖啡", "甜點", "手搖", "披薩", "漢堡", "拉麵"]
   },
   "鴨肉飯": {
-    queries: ["鴨肉飯", "當歸鴨", "鴨肉麵線"],
+    queries: ["鴨肉飯", "當歸鴨", "鴨肉麵線", "鴨肉"],
     matches: ["鴨肉飯", "鴨肉", "當歸鴨", "烤鴨", "鴨莊"],
     excludes: ["咖啡", "甜點", "手搖", "披薩", "漢堡", "拉麵"]
   },
   "健康餐盒": {
-    queries: ["健康餐盒", "低卡便當", "水煮餐"],
+    queries: ["健康餐盒", "低卡便當", "水煮餐", "舒肥便當"],
     matches: ["健康餐", "低卡", "舒肥", "水煮", "低GI", "蛋白", "少油低卡", "能量盒", "健康便當"],
     excludes: ["油炸", "火鍋", "甜點", "手搖", "咖啡", "炸雞"]
   },
   "水餃": {
-    queries: ["水餃", "餃子", "鍋貼"],
-    matches: ["水餃", "餃子", "鍋貼", "八方雲集", "四海遊龍", "水餃館", "蒸餃"],
+    queries: ["水餃", "八方雲集", "四海遊龍", "鍋貼", "餃子"],
+    matches: ["水餃", "餃子", "鍋貼", "八方雲集", "四海遊龍", "水餃館", "蒸餃", "餃"],
     excludes: ["咖啡", "甜點", "手搖", "五金", "服飾", "義大利麵", "漢堡"]
   },
   "早午餐": {
-    queries: ["早午餐", "Brunch"],
+    queries: ["早午餐", "麥味登", "弘爺漢堡", "拉亞漢堡", "晨間廚房", "Brunch"],
     matches: ["早午餐", "Brunch", "早餐", "晨間", "麥味登", "弘爺", "拉亞", "美芝城", "吐司", "三明治"],
     excludes: ["熱炒", "火鍋", "燒烤", "便當", "鐵板燒", "牛肉麵"]
   },
   "壽司": {
-    queries: ["壽司", "日式壽司", "迴轉壽司"],
+    queries: ["壽司", "爭鮮", "藏壽司", "壽司郎", "迴轉壽司"],
     matches: ["壽司", "すし", "Sushi", "爭鮮", "壽司郎", "藏壽司", "くら寿司", "握壽司", "日式料理", "生魚片"],
     excludes: ["咖啡", "甜點", "手搖", "麵包", "牛肉麵", "火鍋", "便當"]
   },
   "漢堡": {
-    queries: ["漢堡", "美式漢堡"],
+    queries: ["漢堡", "麥當勞", "肯德基", "摩斯漢堡", "漢堡王", "SUBWAY"],
     matches: ["漢堡", "Burger", "麥當勞", "肯德基", "摩斯漢堡", "漢堡王", "SUBWAY", "美式"],
     excludes: ["水餃", "火鍋", "滷肉飯", "牛肉麵", "熱炒", "便當"]
   },
   "披薩": {
-    queries: ["披薩", "Pizza"],
+    queries: ["披薩", "必勝客", "達美樂", "拿坡里", "Pizza"],
     matches: ["披薩", "比薩", "Pizza", "必勝客", "達美樂", "拿坡里", "窯烤披薩"],
     excludes: ["火鍋", "拉麵", "牛肉麵", "滷肉飯", "便當", "甜點", "手搖"]
   }
@@ -654,15 +654,15 @@ function isClosedOrDisused(item, rawName) {
   return false;
 }
 
-// 嚴格檢查店名是否與品項高度吻合，並排除飲料/超商等雜質
+// 檢查店名是否合格，並排除飲料/超商等雜質
 function matchesCategoryPrecision(rawName, displayName, category) {
   const fullName = `${rawName} ${displayName || ""}`.toLowerCase();
 
-  // 1. 通用排除名單（飲料店、便利超商、醫療院所、五金等非正餐雜質）
+  // 1. 通用排除名單（純飲料店、便利超商、醫療院所、五金等非正餐雜質）
   const commonExcludes = [
     "50嵐", "五十嵐", "清心福全", "麻古茶坊", "迷客夏", "可不可熟成紅茶", "茶湯會", "珍煮丹", "烏弄",
-    "7-eleven", "7-11", "全家便利", "萊爾富", "ok便利",
-    "藥局", "診所", "中醫", "眼科", "彩券", "機車行", "汽車修配", "五金行"
+    "7-eleven", "7-11", "全家便利", "萊爾富", "ok便利", "全聯", "家樂福",
+    "藥局", "診所", "中醫", "眼科", "牙醫", "彩券", "機車行", "汽車修配", "五金行"
   ];
   if (commonExcludes.some(ex => fullName.includes(ex.toLowerCase()))) {
     return false;
@@ -670,26 +670,15 @@ function matchesCategoryPrecision(rawName, displayName, category) {
 
   const rule = CATEGORY_SEARCH_MAP[category];
   if (!rule) {
-    // 自訂品項：若店名包含該自訂品項關鍵字即可
-    return fullName.includes(category.toLowerCase());
+    return true;
   }
 
-  // 2. 品項專屬排除關鍵字（例如壽司類出現火鍋或牛肉麵）
+  // 2. 品項專屬排除關鍵字（例如壽司類排除火鍋）
   if (rule.excludes && rule.excludes.some(ex => fullName.includes(ex.toLowerCase()))) {
     return false;
   }
 
-  // 3. 符合品項匹配詞彙（店名或地標特徵至少命中一個）
-  if (rule.matches && rule.matches.some(m => fullName.includes(m.toLowerCase()))) {
-    return true;
-  }
-
-  // 4. 店名直接包含該品項名稱
-  if (fullName.includes(category.toLowerCase())) {
-    return true;
-  }
-
-  return false;
+  return true;
 }
 
 // 清洗與格式化台灣地址路段字串
@@ -790,73 +779,43 @@ async function searchNearbyRestaurants(category) {
   const validRestaurants = [];
 
   try {
-    // 1. 優先搜尋第一關鍵字
-    const primaryData = await fetchNominatimPlaces(queryList[0], viewbox, controller.signal);
+    // 1. 同時並行查詢前 3 個熱門關鍵字，大幅提高命中率
+    const searchPromises = queryList.slice(0, 3).map(term => 
+      fetchNominatimPlaces(term, viewbox, controller.signal)
+    );
+    const searchResultsArrays = await Promise.all(searchPromises);
 
-    for (const item of primaryData) {
-      const itemLat = parseFloat(item.lat);
-      const itemLon = parseFloat(item.lon);
-      if (isNaN(itemLat) || isNaN(itemLon)) continue;
+    for (const dataList of searchResultsArrays) {
+      for (const item of dataList) {
+        const itemLat = parseFloat(item.lat);
+        const itemLon = parseFloat(item.lon);
+        if (isNaN(itemLat) || isNaN(itemLon)) continue;
 
-      const dist = calculateDistanceMeters(lat, lon, itemLat, itemLon);
-      // 嚴格限制：超過 8 公里立即捨棄
-      if (dist > maxDistanceMeters) continue;
+        const dist = calculateDistanceMeters(lat, lon, itemLat, itemLon);
+        // 嚴格限制：超過 8 公里立即捨棄
+        if (dist > maxDistanceMeters) continue;
 
-      const rawName = item.name || (item.display_name ? item.display_name.split(",")[0].trim() : "");
-      if (!rawName) continue;
+        const rawName = item.name || (item.display_name ? item.display_name.split(",")[0].trim() : "");
+        if (!rawName) continue;
 
-      // 過濾已歇業或停業
-      if (isClosedOrDisused(item, rawName)) continue;
+        // 過濾已歇業或停業
+        if (isClosedOrDisused(item, rawName)) continue;
 
-      // 過濾店名落差與非正餐雜質
-      if (!matchesCategoryPrecision(rawName, item.display_name, category)) continue;
+        // 過濾非餐飲雜質
+        if (!matchesCategoryPrecision(rawName, item.display_name, category)) continue;
 
-      const uniqueKey = `${rawName.replace(/\s+/g, "")}_${itemLat.toFixed(3)}_${itemLon.toFixed(3)}`;
-      if (seenIds.has(uniqueKey)) continue;
-      seenIds.add(uniqueKey);
+        const uniqueKey = `${rawName.replace(/\s+/g, "")}_${itemLat.toFixed(3)}_${itemLon.toFixed(3)}`;
+        if (seenIds.has(uniqueKey)) continue;
+        seenIds.add(uniqueKey);
 
-      validRestaurants.push({
-        name: rawName,
-        lat: itemLat,
-        lon: itemLon,
-        distance: dist,
-        address: formatCleanAddress(item.display_name),
-        cuisine: category
-      });
-    }
-
-    // 2. 若合格店家少於 4 間且有次要關鍵字，搜尋補充
-    if (validRestaurants.length < 4 && queryList.length > 1) {
-      for (let i = 1; i < Math.min(queryList.length, 3); i++) {
-        if (validRestaurants.length >= 8) break;
-        const subData = await fetchNominatimPlaces(queryList[i], viewbox, controller.signal);
-        for (const item of subData) {
-          const itemLat = parseFloat(item.lat);
-          const itemLon = parseFloat(item.lon);
-          if (isNaN(itemLat) || isNaN(itemLon)) continue;
-
-          const dist = calculateDistanceMeters(lat, lon, itemLat, itemLon);
-          if (dist > maxDistanceMeters) continue;
-
-          const rawName = item.name || (item.display_name ? item.display_name.split(",")[0].trim() : "");
-          if (!rawName) continue;
-
-          if (isClosedOrDisused(item, rawName)) continue;
-          if (!matchesCategoryPrecision(rawName, item.display_name, category)) continue;
-
-          const uniqueKey = `${rawName.replace(/\s+/g, "")}_${itemLat.toFixed(3)}_${itemLon.toFixed(3)}`;
-          if (seenIds.has(uniqueKey)) continue;
-          seenIds.add(uniqueKey);
-
-          validRestaurants.push({
-            name: rawName,
-            lat: itemLat,
-            lon: itemLon,
-            distance: dist,
-            address: formatCleanAddress(item.display_name),
-            cuisine: category
-          });
-        }
+        validRestaurants.push({
+          name: rawName,
+          lat: itemLat,
+          lon: itemLon,
+          distance: dist,
+          address: formatCleanAddress(item.display_name),
+          cuisine: category
+        });
       }
     }
   } catch (err) {
@@ -915,29 +874,45 @@ function renderRestaurantCards(restaurants, category) {
   heroCard.appendChild(heroArrow);
   listEl.appendChild(heroCard);
 
+  // 若開源地圖未登錄該小吃，無縫切換為 Google Maps 官方即時店家卡，絕不讓使用者撲空
   if (restaurants.length === 0) {
-    countEl.textContent = "0 間";
+    countEl.textContent = "Google Maps 即時清單";
 
     const emptyBox = document.createElement("div");
     emptyBox.className = "empty-box";
+    emptyBox.style.background = "#FFFFFF";
+    emptyBox.style.border = "1.5px solid #EADBC8";
+    emptyBox.style.padding = "18px 16px";
 
     const p1 = document.createElement("p");
-    p1.textContent = `在周邊 8 公里生活圈內未找到登記收錄的【${category}】店家`;
+    p1.style.fontSize = "15px";
+    p1.style.fontWeight = "700";
+    p1.style.color = "#2C2825";
+    p1.textContent = `📍 已鎖定周邊 8 公里生活圈的【${category}】`;
+
+    const p2 = document.createElement("p");
+    p2.style.fontSize = "12px";
+    p2.style.color = "#8C827A";
+    p2.style.margin = "6px 0 14px";
+    p2.textContent = `因在地小吃大多直接登記於 Google，點擊下方立即查看 Google Maps 為您推薦的周邊營業店家與真實評分：`;
 
     const gmapsLink = document.createElement("a");
     gmapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('附近 ' + category)}`;
     gmapsLink.target = "_blank";
     gmapsLink.rel = "noopener noreferrer";
     gmapsLink.className = "direct-gmaps-fallback";
+    gmapsLink.style.padding = "12px 18px";
+    gmapsLink.style.fontSize = "14px";
 
     const mapIcon = document.createElement("span");
     mapIcon.textContent = "🗺️ ";
     const mapText = document.createElement("span");
-    mapText.textContent = `於 Google Maps 擴大搜尋【${category}】`;
+    mapText.textContent = `開啟 Google Maps 查看附近所有【${category}】`;
     gmapsLink.appendChild(mapIcon);
     gmapsLink.appendChild(mapText);
 
     emptyBox.appendChild(p1);
+    emptyBox.appendChild(p2);
     emptyBox.appendChild(gmapsLink);
     listEl.appendChild(emptyBox);
     return;
