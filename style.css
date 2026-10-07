@@ -1145,52 +1145,10 @@ body {
   opacity: 0.95;
 }
 
-/* 常見名店晶片群 */
-.chips-section-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: #8C827A;
-  margin-top: 2px;
-}
-
-.store-chips-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.store-chip-btn {
-  background: #FFFFFF;
-  border: 1px solid #DECFC0;
-  border-radius: 14px;
-  padding: 5px 11px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #4A423B;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: inherit;
-}
-
-.store-chip-btn:active {
-  background: #F3ECE2;
-  border-color: var(--accent-wood);
-  transform: scale(0.96);
-}
-
-.store-chip-btn.is-fav {
-  background: #FFFDF5;
-  border-color: #E2BA72;
-  color: #825816;
-}
-
 .record-divider {
   height: 1px;
   border-top: 1px dashed #E5DDD1;
-  margin: 2px 0;
+  margin: 4px 0;
 }
 
 /* 手動輸入區塊 (上下垂直排列) */

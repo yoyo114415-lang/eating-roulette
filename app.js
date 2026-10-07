@@ -795,56 +795,6 @@ async function fetchNominatimPlaces(queryTerm, viewbox, signal) {
 // 10. Google Maps 官方生活圈即時導航面板 (方案 A：杜絕幽靈與歇業店家、即時營業狀態)
 // ==========================================================================
 
-// 取得該品類的常見名店晶片（包含歷史吃過的私房愛店 + 台灣知名真實名店）
-function getPopularStoreChips(category) {
-  const chips = [];
-  const seen = new Set();
-
-  // 1. 優先加入使用者過去曾吃過且屬於該品類的「私房愛店」（智慧記憶愛店）
-  if (Array.isArray(State.history)) {
-    State.history.forEach(h => {
-      if (h.category === category && h.name && h.name !== category && !seen.has(h.name)) {
-        seen.add(h.name);
-        chips.push({ name: h.name, isFav: true });
-      }
-    });
-  }
-
-  // 2. 補充台灣常見真實熱門知名店家 (100% Google Maps 真實店家)
-  const defaultStorePresets = {
-    "健康餐": ["野餐，日。", "Mr.布魯", "勁請享用", "能量小姐", "少點鹽", "隨主飡", "給力盒子", "卡洛貍", "Poke波奇"],
-    "便當": ["梁社漢排骨", "正忠排骨", "池上飯包", "悟饕池上", "金仙魯肉飯", "家鄉便當"],
-    "定食": ["大戶屋", "定食8", "勝博殿", "福勝亭", "日式洋食"],
-    "炒飯": ["炒飯專家", "在地熱炒", "鼎泰豐炒飯", "台南炒飯"],
-    "炒麵": ["鱔魚意麵", "台式熱炒麵", "什錦炒麵", "沙茶牛肉炒麵"],
-    "牛肉麵": ["三商巧福", "段純貞", "老張牛肉麵", "林東芳", "清燉牛肉麵"],
-    "拉麵": ["一蘭拉麵", "屯京拉麵", "花月嵐", "隱家拉麵", "麵屋武藏", "鳥人拉麵"],
-    "義大利麵": ["薩莉亞", "洋城義大利麵", "托斯卡尼", "義麵坊"],
-    "咖哩飯": ["CoCo壹番屋", "通庵熟成咖哩", "日式咖哩", "家常咖哩"],
-    "丼飯": ["すき家 (Sukiya)", "吉野家", "松屋", "燒肉丼專賣"],
-    "火鍋": ["石二鍋", "六扇門", "錢都涮涮鍋", "築間幸福鍋物", "肉多多", "三媽臭臭鍋"],
-    "鐵板燒": ["大埔鐵板燒", "紅花鐵板燒", "平價鐵板燒"],
-    "滷肉飯": ["鬍鬚張", "金峰魯肉飯", "在地小吃滷肉飯"],
-    "雞肉飯": ["嘉義火雞肉飯", "梁社漢", "海南雞飯"],
-    "鴨肉飯": ["當歸鴨肉飯", "鴨肉珍", "鴨肉扁"],
-    "水餃": ["八方雲集", "四海遊龍", "及第水餃", "手工水餃"],
-    "早午餐": ["貳樓", "路易莎早午餐", "Q Burger", "麥味登", "早安美芝城", "濰克早午餐"],
-    "壽司": ["爭鮮", "藏壽司 (くら寿司)", "壽司郎 (Sushiro)", "點爭鮮"],
-    "漢堡": ["麥當勞", "肯德基", "摩斯漢堡", "漢堡王", "SUBWAY"],
-    "披薩": ["必勝客", "達美樂", "拿坡里披薩", "窯烤披薩"]
-  };
-
-  const presetList = defaultStorePresets[category] || [`在地${category}名店`];
-  for (const store of presetList) {
-    if (!seen.has(store)) {
-      seen.add(store);
-      chips.push({ name: store, isFav: false });
-    }
-  }
-
-  return chips.slice(0, 9);
-}
-
 function searchNearbyRestaurants(category) {
   const section = document.getElementById("restaurantsSection");
   const listEl = document.getElementById("restaurantList");
@@ -996,50 +946,15 @@ function searchNearbyRestaurants(category) {
   };
   recordPanel.appendChild(catRecordBtn);
 
-  // 2. 常見名店一鍵點選晶片群
-  const chipsTitle = document.createElement("div");
-  chipsTitle.className = "chips-section-title";
-  chipsTitle.textContent = "💡 常見名店一鍵點選（免打字）：";
-  recordPanel.appendChild(chipsTitle);
-
-  const chipsGrid = document.createElement("div");
-  chipsGrid.className = "store-chips-grid";
-  const popularChips = getPopularStoreChips(category);
-
-  popularChips.forEach(chip => {
-    const chipBtn = document.createElement("button");
-    chipBtn.className = "store-chip-btn" + (chip.isFav ? " is-fav" : "");
-    chipBtn.textContent = (chip.isFav ? "⭐ " : "") + chip.name;
-
-    chipBtn.onclick = () => {
-      HistoryManager.addRecord(chip.name, category);
-      chipBtn.textContent = `✓ ${chip.name}`;
-      chipBtn.style.background = "#2E6B47";
-      chipBtn.style.color = "#FFFFFF";
-      chipBtn.style.borderColor = "#2E6B47";
-      showToast(`🎉 已為您記錄「${chip.name}」！未來 3 天內將在轉盤標記。`);
-      wheel.draw(State.currentAngle);
-      setTimeout(() => {
-        chipBtn.textContent = (chip.isFav ? "⭐ " : "") + chip.name;
-        chipBtn.style.background = "";
-        chipBtn.style.color = "";
-        chipBtn.style.borderColor = "";
-      }, 2500);
-    };
-
-    chipsGrid.appendChild(chipBtn);
-  });
-  recordPanel.appendChild(chipsGrid);
-
   // 分割線
   const divider = document.createElement("div");
   divider.className = "record-divider";
   recordPanel.appendChild(divider);
 
-  // 3. 手動輸入區 (上下垂直排列，全寬大按鈕在下方)
+  // 2. 手動輸入區 (上下垂直排列，全寬大按鈕在下方)
   const manualHeader = document.createElement("div");
   manualHeader.className = "manual-input-header";
-  manualHeader.textContent = "✏️ 找不到您的店家？手動輸入店名：";
+  manualHeader.textContent = "✏️ 想要記錄具體店名？手動輸入：";
   recordPanel.appendChild(manualHeader);
 
   const manualCol = document.createElement("div");
