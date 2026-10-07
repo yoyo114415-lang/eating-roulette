@@ -596,6 +596,46 @@ body {
   border-radius: 4px;
 }
 
+/* 評價提示標籤 (Gold Star Badge) */
+.rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #B25E00;
+  background: #FFF8E7;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid #FFE0A3;
+}
+
+.card-address {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.hero-gmaps-card {
+  background: linear-gradient(135deg, #FAF4EB, #F2E8D9);
+  border: 1.5px solid var(--accent-wood-light);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
+  box-shadow: var(--shadow-sm);
+}
+
+.hero-gmaps-card:active {
+  transform: scale(0.98);
+}
+
 /* 距離膠囊標籤 (由近到遠) */
 .distance-pill {
   font-size: 12px;

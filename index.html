@@ -14,7 +14,7 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%23FBF9F5' stroke='%23C49A6C' stroke-width='6'/><text x='50' y='65' font-size='42' text-anchor='middle' fill='%23C84B31' font-family='serif' font-weight='bold'>食</text></svg>">
   
   <!-- 現代安全防禦：Content Security Policy (嚴防 XSS、惡意腳本注入與未授權外連) -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://overpass-api.de; img-src 'self' data: https:; object-src 'none'; base-uri 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems; img-src 'self' data: https:; object-src 'none'; base-uri 'self';">
 
   <!-- 樣式表 -->
   <link rel="stylesheet" href="style.css">
@@ -86,7 +86,7 @@
           <span id="locationStatusText">正在確認 GPS 定位...</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="radius-badge" style="background: #FAF4EB; color: #B88B58; border: 1px solid #EADBC8;">不限距離 · 由近到遠</span>
+          <span class="radius-badge" style="background: #FAF4EB; color: #B88B58; border: 1px solid #EADBC8;">5~8 公里生活圈 · 由近到遠</span>
           <button id="reLocateBtn" class="re-locate-btn">重新定位</button>
         </div>
       </div>

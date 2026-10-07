@@ -14,11 +14,11 @@
 // 1. 預設 25 種具體單一美食品項與傳統和風配色
 // ==========================================================================
 const DEFAULT_ITEMS = [
-  "炒飯", "炒麵", "早午餐", "定食", "便當",
-  "義大利麵", "燉飯", "拉麵", "烏龍麵", "火鍋",
-  "咖哩飯", "牛肉麵", "水餃", "鍋貼", "滷肉飯",
-  "雞肉飯", "健康餐盒", "鐵板燒", "漢堡", "披薩",
-  "壽司", "丼飯", "蛋包飯", "湯包", "鴨肉飯"
+  "便當", "定食", "炒飯", "炒麵", "牛肉麵",
+  "拉麵", "烏龍麵", "義大利麵", "燉飯", "咖哩飯",
+  "丼飯", "蛋包飯", "火鍋", "鐵板燒", "滷肉飯",
+  "雞肉飯", "鴨肉飯", "健康餐盒", "水餃", "早午餐",
+  "壽司", "漢堡", "披薩"
 ];
 
 // 日系和風柔和色票（練色、白綠、洗朱、藤鼠、薄梅鼠、甕覗、鳥子色、利休白茶）
@@ -43,11 +43,11 @@ const State = {
   // 使用者座標
   userLocation: null, // { lat: number, lon: number }
   isLocating: false,
-  // 搜尋半徑 (不限距離模式：預設 25 公里大範圍，嚴格依距離由近到遠排序)
-  radius: 25000,
+  // 搜尋生活圈半徑 (公尺，預設 6 公里涵蓋機車大生活圈)
+  radius: 6000,
   // 歷史紀錄資料庫 key
   STORAGE_HISTORY_KEY: "eating_history_records_v1",
-  STORAGE_CUSTOM_ITEMS_KEY: "eating_custom_items_v1",
+  STORAGE_CUSTOM_ITEMS_KEY: "eating_custom_items_v2",
   // 本地已存歷史 [{ name: string, category: string, timestamp: number }]
   history: []
 };
@@ -568,59 +568,100 @@ async function searchNearbyRestaurants(category) {
   const spinner = document.createElement("div");
   spinner.className = "spinner";
   const pLoading = document.createElement("p");
-  pLoading.textContent = `正在為您由近到遠尋找附近的【${category}】與餐廳...`;
+  pLoading.textContent = `正在為您尋找周邊生活圈（5~8公里）的【${category}】店家...`;
   loadingBox.appendChild(spinner);
   loadingBox.appendChild(pLoading);
   listEl.appendChild(loadingBox);
 
   const { lat, lon } = State.userLocation;
-  const radius = State.radius;
+  const delta = 0.07; // 約 7~8 公里生活圈視窗
+  const viewbox = `${lon - delta},${lat + delta},${lon + delta},${lat - delta}`;
+  const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(category)}&countrycodes=tw&viewbox=${viewbox}&bounded=0&limit=25`;
 
-  // 使用 Overpass API 查詢周邊餐廳與小吃店家
-  // 設定 5 秒超時機制以利快速容錯降級
-  const overpassQuery = `[out:json][timeout:6];(
-    node["amenity"~"restaurant|fast_food|cafe"](around:${radius},${lat},${lon});
-  );out 35;`;
-
-  const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 6500);
+  const timeoutId = setTimeout(() => controller.abort(), 6000);
+
+  let validRestaurants = [];
+
+  // 清洗與格式化台灣地址路段字串
+  function formatCleanAddress(displayName) {
+    if (!displayName) return "";
+    const parts = displayName.split(",").map(s => s.trim());
+    const relevant = parts.filter(p => /路|街|巷|段|區|市|鎮|鄉/.test(p) && !/臺灣|台灣|\d{5,6}/.test(p));
+    if (relevant.length > 0) {
+      return relevant.slice(0, 2).reverse().join(" · ");
+    }
+    return parts.slice(1, 3).join(" · ");
+  }
 
   try {
-    const res = await fetch(url, { signal: controller.signal });
+    const res = await fetch(nominatimUrl, {
+      signal: controller.signal,
+      headers: { "Accept": "application/json" }
+    });
     clearTimeout(timeoutId);
 
-    if (!res.ok) throw new Error("API 伺服器忙碌中");
-    const data = await res.json();
-
-    const elements = data.elements || [];
-    const validRestaurants = [];
-
-    // 解析店家名稱與經緯度
-    for (const el of elements) {
-      const name = el.tags && (el.tags.name || el.tags["name:zh"] || el.tags["name:en"]);
-      if (name && name.trim()) {
-        const dist = calculateDistanceMeters(lat, lon, el.lat, el.lon);
-        validRestaurants.push({
-          name: name.trim(),
-          lat: el.lat,
-          lon: el.lon,
-          distance: dist,
-          cuisine: el.tags.cuisine || el.tags.amenity || ""
-        });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        for (const item of data) {
+          const itemLat = parseFloat(item.lat);
+          const itemLon = parseFloat(item.lon);
+          if (!isNaN(itemLat) && !isNaN(itemLon)) {
+            const dist = calculateDistanceMeters(lat, lon, itemLat, itemLon);
+            const rawName = item.name || (item.display_name ? item.display_name.split(",")[0].trim() : category);
+            validRestaurants.push({
+              name: rawName,
+              lat: itemLat,
+              lon: itemLon,
+              distance: dist,
+              address: formatCleanAddress(item.display_name),
+              cuisine: item.type || category
+            });
+          }
+        }
       }
     }
-
-    // 依距離由近到遠嚴格排序 (Nearest First)
-    validRestaurants.sort((a, b) => a.distance - b.distance);
-
-    renderRestaurantCards(validRestaurants, category);
   } catch (err) {
     clearTimeout(timeoutId);
-    console.warn("Overpass API 查詢降級備援:", err);
-    // 智慧容錯：無縫降級為 Google Maps 深度連結
-    renderFallbackGmapsView(category);
+    console.warn("Nominatim 地圖查詢超時或備援:", err);
   }
+
+  // 若特定關鍵字收錄較少，自動擴展搜尋周邊餐廳補充
+  if (validRestaurants.length < 3) {
+    try {
+      const fallbackUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent('餐廳')}&countrycodes=tw&viewbox=${viewbox}&bounded=1&limit=15`;
+      const fallbackRes = await fetch(fallbackUrl, { headers: { "Accept": "application/json" } });
+      if (fallbackRes.ok) {
+        const fallbackData = await fallbackRes.json();
+        for (const item of fallbackData) {
+          const itemLat = parseFloat(item.lat);
+          const itemLon = parseFloat(item.lon);
+          if (!isNaN(itemLat) && !isNaN(itemLon)) {
+            const dist = calculateDistanceMeters(lat, lon, itemLat, itemLon);
+            const rawName = item.name || (item.display_name ? item.display_name.split(",")[0].trim() : "");
+            if (rawName && !validRestaurants.some(r => r.name === rawName)) {
+              validRestaurants.push({
+                name: rawName,
+                lat: itemLat,
+                lon: itemLon,
+                distance: dist,
+                address: formatCleanAddress(item.display_name),
+                cuisine: category
+              });
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // 容錯靜默
+    }
+  }
+
+  // 依距離由近到遠嚴格排序 (Nearest First)
+  validRestaurants.sort((a, b) => a.distance - b.distance);
+
+  renderRestaurantCards(validRestaurants, category);
 }
 
 // 渲染餐廳清單卡片 (安全純原生 DOM textContent 注入，零 XSS 風險)
@@ -629,6 +670,41 @@ function renderRestaurantCards(restaurants, category) {
   const countEl = document.getElementById("searchCount");
   listEl.innerHTML = "";
 
+  // 置頂推薦 Google Maps 快捷卡片
+  const heroCard = document.createElement("a");
+  heroCard.className = "hero-gmaps-card";
+  heroCard.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('附近 ' + category)}`;
+  heroCard.target = "_blank";
+  heroCard.rel = "noopener noreferrer";
+
+  const heroInfo = document.createElement("div");
+  heroInfo.style.display = "flex";
+  heroInfo.style.flexDirection = "column";
+  heroInfo.style.gap = "2px";
+
+  const heroTitle = document.createElement("div");
+  heroTitle.style.fontSize = "13px";
+  heroTitle.style.fontWeight = "700";
+  heroTitle.style.color = "#7A5123";
+  heroTitle.textContent = `🌟 在 Google Maps 查看附近所有【${category}】`;
+
+  const heroSub = document.createElement("div");
+  heroSub.style.fontSize = "11px";
+  heroSub.style.color = "#8C827A";
+  heroSub.textContent = "即時顯示各店家星級評分、評論數、照片與營業時間";
+
+  heroInfo.appendChild(heroTitle);
+  heroInfo.appendChild(heroSub);
+
+  const heroArrow = document.createElement("span");
+  heroArrow.style.fontSize = "16px";
+  heroArrow.style.color = "#B88B58";
+  heroArrow.textContent = "➔";
+
+  heroCard.appendChild(heroInfo);
+  heroCard.appendChild(heroArrow);
+  listEl.appendChild(heroCard);
+
   if (restaurants.length === 0) {
     countEl.textContent = "0 間";
 
@@ -636,7 +712,7 @@ function renderRestaurantCards(restaurants, category) {
     emptyBox.className = "empty-box";
 
     const p1 = document.createElement("p");
-    p1.textContent = `在周邊 ${formatDistance(State.radius)} 內未找到收錄的店家`;
+    p1.textContent = `在周邊生活圈內未找到登記收錄的店家`;
 
     const gmapsLink = document.createElement("a");
     gmapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('附近 ' + category)}`;
@@ -664,7 +740,8 @@ function renderRestaurantCards(restaurants, category) {
     card.className = "restaurant-card";
 
     // 點擊店家名稱或卡片直接跳轉 Google Maps
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.name + ' ' + r.lat + ',' + r.lon)}`;
+    const gmapsQuery = `${r.name} ${r.address || ''} ${r.lat},${r.lon}`;
+    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gmapsQuery)}`;
     card.title = "點擊開啟 Google Maps 查看店家評價與路線";
     card.onclick = (e) => {
       // 避免點擊「記錄這餐」按鈕時誤跳轉
@@ -691,6 +768,14 @@ function renderRestaurantCards(restaurants, category) {
     nameEl.appendChild(linkIcon);
     titleArea.appendChild(nameEl);
 
+    // 地址路段資訊
+    if (r.address) {
+      const addrEl = document.createElement("div");
+      addrEl.className = "card-address";
+      addrEl.textContent = `📍 ${r.address}`;
+      titleArea.appendChild(addrEl);
+    }
+
     // 點擊提示文字
     const hintText = document.createElement("div");
     hintText.className = "card-jump-hint";
@@ -699,6 +784,12 @@ function renderRestaurantCards(restaurants, category) {
 
     const badgesArea = document.createElement("div");
     badgesArea.className = "restaurant-badges";
+
+    // 評價金黃標籤
+    const ratingBadge = document.createElement("span");
+    ratingBadge.className = "rating-badge";
+    ratingBadge.textContent = "⭐ Google 評價 · 點擊查看";
+    badgesArea.appendChild(ratingBadge);
 
     // 檢查該餐廳在 3 天內是否已吃過
     const eatenStatus = HistoryManager.checkEatenStatus(r.name, category);
@@ -719,7 +810,7 @@ function renderRestaurantCards(restaurants, category) {
     titleArea.appendChild(badgesArea);
     topRow.appendChild(titleArea);
 
-    // 距離膠囊
+    // 距離膠囊 (由近到遠)
     const distPill = document.createElement("div");
     distPill.className = "distance-pill";
     distPill.textContent = formatDistance(r.distance);
