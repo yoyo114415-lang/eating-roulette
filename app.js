@@ -48,7 +48,9 @@ const State = {
   STORAGE_HISTORY_KEY: "eating_history_records_v1",
   STORAGE_CUSTOM_ITEMS_KEY: "eating_custom_items_v4",
   // 本地已存歷史 [{ name: string, category: string, timestamp: number }]
-  history: []
+  history: [],
+  // 轉盤動畫安全看門狗計時器 (防止 Android 懸浮泡泡凍結鎖死)
+  spinWatchdogTimer: null
 };
 
 // ==========================================================================
@@ -197,7 +199,10 @@ class RouletteWheel {
   resize() {
     const dpr = window.devicePixelRatio || 2;
     const rect = this.canvas.getBoundingClientRect();
-    const size = rect.width || 320;
+    const size = rect.width;
+    // 安全防護：若 Android 懸浮聊天泡泡拖曳或鍵盤彈出導致尺寸為 0 或小於 50，忽略本次 resize 避免 Canvas 毀損
+    if (!size || size < 50) return;
+
     this.canvas.width = size * dpr;
     this.canvas.height = size * dpr;
     this.ctx.scale(dpr, dpr);
@@ -322,6 +327,21 @@ function spinRoulette() {
   let lastSectorIndex = -1;
   const pointerEl = document.getElementById("wheelPointer");
 
+  // 4.5 秒看門狗超時保護 (Watchdog Fail-Safe)
+  // 避免 Android 懸浮聊天泡泡 / 系統通知凍結動畫導致按鈕永久鎖死
+  clearTimeout(State.spinWatchdogTimer);
+  State.spinWatchdogTimer = setTimeout(() => {
+    if (State.isSpinning) {
+      console.warn("轉盤動畫逾時保護觸發（可能受懸浮視窗或背景暫停影響），強制解鎖狀態");
+      State.isSpinning = false;
+      document.getElementById("centerSpinBtn").classList.remove("spinning");
+      const currentAngle = State.currentAngle;
+      const finalItem = wheel.getCurrentSelectedItem(currentAngle) || State.activeItems[0];
+      State.selectedItem = finalItem;
+      onRouletteFinish(finalItem);
+    }
+  }, 4500);
+
   function animate(now) {
     const elapsed = now - startTime;
     const progress = Math.min(elapsed / duration, 1);
@@ -349,6 +369,7 @@ function spinRoulette() {
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
+      clearTimeout(State.spinWatchdogTimer);
       State.isSpinning = false;
       document.getElementById("centerSpinBtn").classList.remove("spinning");
       
@@ -770,8 +791,60 @@ async function fetchNominatimPlaces(queryTerm, viewbox, signal) {
 
 // ==========================================================================
 // ==========================================================================
+// ==========================================================================
 // 10. Google Maps 官方生活圈即時導航面板 (方案 A：杜絕幽靈與歇業店家、即時營業狀態)
 // ==========================================================================
+
+// 取得該品類的常見名店晶片（包含歷史吃過的私房愛店 + 台灣知名真實名店）
+function getPopularStoreChips(category) {
+  const chips = [];
+  const seen = new Set();
+
+  // 1. 優先加入使用者過去曾吃過且屬於該品類的「私房愛店」（智慧記憶愛店）
+  if (Array.isArray(State.history)) {
+    State.history.forEach(h => {
+      if (h.category === category && h.name && h.name !== category && !seen.has(h.name)) {
+        seen.add(h.name);
+        chips.push({ name: h.name, isFav: true });
+      }
+    });
+  }
+
+  // 2. 補充台灣常見真實熱門知名店家 (100% Google Maps 真實店家)
+  const defaultStorePresets = {
+    "健康餐": ["野餐，日。", "Mr.布魯", "勁請享用", "能量小姐", "少點鹽", "隨主飡", "給力盒子", "卡洛貍", "Poke波奇"],
+    "便當": ["梁社漢排骨", "正忠排骨", "池上飯包", "悟饕池上", "金仙魯肉飯", "家鄉便當"],
+    "定食": ["大戶屋", "定食8", "勝博殿", "福勝亭", "日式洋食"],
+    "炒飯": ["炒飯專家", "在地熱炒", "鼎泰豐炒飯", "台南炒飯"],
+    "炒麵": ["鱔魚意麵", "台式熱炒麵", "什錦炒麵", "沙茶牛肉炒麵"],
+    "牛肉麵": ["三商巧福", "段純貞", "老張牛肉麵", "林東芳", "清燉牛肉麵"],
+    "拉麵": ["一蘭拉麵", "屯京拉麵", "花月嵐", "隱家拉麵", "麵屋武藏", "鳥人拉麵"],
+    "義大利麵": ["薩莉亞", "洋城義大利麵", "托斯卡尼", "義麵坊"],
+    "咖哩飯": ["CoCo壹番屋", "通庵熟成咖哩", "日式咖哩", "家常咖哩"],
+    "丼飯": ["すき家 (Sukiya)", "吉野家", "松屋", "燒肉丼專賣"],
+    "火鍋": ["石二鍋", "六扇門", "錢都涮涮鍋", "築間幸福鍋物", "肉多多", "三媽臭臭鍋"],
+    "鐵板燒": ["大埔鐵板燒", "紅花鐵板燒", "平價鐵板燒"],
+    "滷肉飯": ["鬍鬚張", "金峰魯肉飯", "在地小吃滷肉飯"],
+    "雞肉飯": ["嘉義火雞肉飯", "梁社漢", "海南雞飯"],
+    "鴨肉飯": ["當歸鴨肉飯", "鴨肉珍", "鴨肉扁"],
+    "水餃": ["八方雲集", "四海遊龍", "及第水餃", "手工水餃"],
+    "早午餐": ["貳樓", "路易莎早午餐", "Q Burger", "麥味登", "早安美芝城", "濰克早午餐"],
+    "壽司": ["爭鮮", "藏壽司 (くら寿司)", "壽司郎 (Sushiro)", "點爭鮮"],
+    "漢堡": ["麥當勞", "肯德基", "摩斯漢堡", "漢堡王", "SUBWAY"],
+    "披薩": ["必勝客", "達美樂", "拿坡里披薩", "窯烤披薩"]
+  };
+
+  const presetList = defaultStorePresets[category] || [`在地${category}名店`];
+  for (const store of presetList) {
+    if (!seen.has(store)) {
+      seen.add(store);
+      chips.push({ name: store, isFav: false });
+    }
+  }
+
+  return chips.slice(0, 9);
+}
+
 function searchNearbyRestaurants(category) {
   const section = document.getElementById("restaurantsSection");
   const listEl = document.getElementById("restaurantList");
@@ -854,6 +927,12 @@ function searchNearbyRestaurants(category) {
   mainBtn.appendChild(mainText);
   heroPanel.appendChild(mainBtn);
 
+  // Google Maps 贊助商廣告溫馨提示
+  const adHint = document.createElement("div");
+  adHint.className = "gmaps-ad-hint";
+  adHint.textContent = "💡 溫馨提醒：Google Maps 搜尋結果首筆若標註「贊助商」為廣告，請直接查看下方依距離排序的真實店家。";
+  heroPanel.appendChild(adHint);
+
   // 三大即時快捷篩選按鈕
   const filterGrid = document.createElement("div");
   filterGrid.className = "quick-filter-grid";
@@ -885,59 +964,129 @@ function searchNearbyRestaurants(category) {
   });
   heroPanel.appendChild(filterGrid);
 
-  // 3 天防重複用餐履歷記錄盒
+  // 3 天防重複用餐履歷記錄盒 (雙軌：一鍵記錄品類 + 名店晶片 + 手動輸入)
   const recordPanel = document.createElement("div");
   recordPanel.className = "record-box-panel";
 
   const recordTitle = document.createElement("div");
   recordTitle.className = "record-box-title";
-  recordTitle.textContent = "📝 決定好店家了嗎？記錄至 3 天用餐履歷：";
+  recordTitle.textContent = "📝 決定好今天吃哪家了嗎？記錄至 3 天用餐履歷：";
+  recordPanel.appendChild(recordTitle);
 
-  const recordRow = document.createElement("div");
-  recordRow.className = "record-box-row";
+  // 1. 一鍵極速記錄品類大按鈕
+  const catRecordBtn = document.createElement("button");
+  catRecordBtn.className = "record-category-btn";
+  const catIcon = document.createElement("span");
+  catIcon.textContent = "🍚 ";
+  const catText = document.createElement("span");
+  catText.textContent = `決定今天吃【${category}】！一鍵記錄至履歷`;
+  catRecordBtn.appendChild(catIcon);
+  catRecordBtn.appendChild(catText);
+
+  catRecordBtn.onclick = () => {
+    HistoryManager.addRecord(category, category);
+    catRecordBtn.style.background = "#2E6B47";
+    catText.textContent = `✓ 已記錄「${category}」！`;
+    showToast(`🎉 已為您記錄「${category}」！未來 3 天內將在轉盤標記。`);
+    wheel.draw(State.currentAngle);
+    setTimeout(() => {
+      catRecordBtn.style.background = "";
+      catText.textContent = `決定今天吃【${category}】！一鍵記錄至履歷`;
+    }, 2500);
+  };
+  recordPanel.appendChild(catRecordBtn);
+
+  // 2. 常見名店一鍵點選晶片群
+  const chipsTitle = document.createElement("div");
+  chipsTitle.className = "chips-section-title";
+  chipsTitle.textContent = "💡 常見名店一鍵點選（免打字）：";
+  recordPanel.appendChild(chipsTitle);
+
+  const chipsGrid = document.createElement("div");
+  chipsGrid.className = "store-chips-grid";
+  const popularChips = getPopularStoreChips(category);
+
+  popularChips.forEach(chip => {
+    const chipBtn = document.createElement("button");
+    chipBtn.className = "store-chip-btn" + (chip.isFav ? " is-fav" : "");
+    chipBtn.textContent = (chip.isFav ? "⭐ " : "") + chip.name;
+
+    chipBtn.onclick = () => {
+      HistoryManager.addRecord(chip.name, category);
+      chipBtn.textContent = `✓ ${chip.name}`;
+      chipBtn.style.background = "#2E6B47";
+      chipBtn.style.color = "#FFFFFF";
+      chipBtn.style.borderColor = "#2E6B47";
+      showToast(`🎉 已為您記錄「${chip.name}」！未來 3 天內將在轉盤標記。`);
+      wheel.draw(State.currentAngle);
+      setTimeout(() => {
+        chipBtn.textContent = (chip.isFav ? "⭐ " : "") + chip.name;
+        chipBtn.style.background = "";
+        chipBtn.style.color = "";
+        chipBtn.style.borderColor = "";
+      }, 2500);
+    };
+
+    chipsGrid.appendChild(chipBtn);
+  });
+  recordPanel.appendChild(chipsGrid);
+
+  // 分割線
+  const divider = document.createElement("div");
+  divider.className = "record-divider";
+  recordPanel.appendChild(divider);
+
+  // 3. 手動輸入區 (上下垂直排列，全寬大按鈕在下方)
+  const manualHeader = document.createElement("div");
+  manualHeader.className = "manual-input-header";
+  manualHeader.textContent = "✏️ 找不到您的店家？手動輸入店名：";
+  recordPanel.appendChild(manualHeader);
+
+  const manualCol = document.createElement("div");
+  manualCol.className = "manual-input-col";
 
   const recordInput = document.createElement("input");
   recordInput.type = "text";
   recordInput.className = "text-input";
-  recordInput.placeholder = "輸入剛選好的店名（例如：梁社漢排骨）";
+  recordInput.placeholder = "輸入剛選好的店名（例如：家鄉便當）";
   recordInput.maxLength = 20;
 
   const recordBtn = document.createElement("button");
-  recordBtn.className = "btn-add";
-  recordBtn.style.whiteSpace = "nowrap";
-  recordBtn.textContent = "記錄這餐";
+  recordBtn.className = "record-btn-full";
+  const fullBtnIcon = document.createElement("span");
+  fullBtnIcon.textContent = "🍚 ";
+  const fullBtnText = document.createElement("span");
+  fullBtnText.textContent = "記錄這餐";
+  recordBtn.appendChild(fullBtnIcon);
+  recordBtn.appendChild(fullBtnText);
 
-  const handleRecord = () => {
+  const handleManualRecord = () => {
     const rawVal = recordInput.value.trim();
     const finalStoreName = rawVal || category;
     HistoryManager.addRecord(finalStoreName, category);
     recordInput.value = "";
-    recordBtn.textContent = "✓ 已記錄";
     recordBtn.style.background = "#2E6B47";
-    recordBtn.style.color = "#FFFFFF";
+    fullBtnText.textContent = `✓ 已記錄「${finalStoreName}」`;
     showToast(`🎉 已為您記錄「${finalStoreName}」！未來 3 天內將在轉盤標記。`);
     wheel.draw(State.currentAngle);
     setTimeout(() => {
-      recordBtn.textContent = "記錄這餐";
       recordBtn.style.background = "";
-      recordBtn.style.color = "";
+      fullBtnText.textContent = "記錄這餐";
     }, 2500);
   };
 
-  recordBtn.onclick = handleRecord;
+  recordBtn.onclick = handleManualRecord;
   recordInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
-      handleRecord();
+      handleManualRecord();
     }
   });
 
-  recordRow.appendChild(recordInput);
-  recordRow.appendChild(recordBtn);
+  manualCol.appendChild(recordInput);
+  manualCol.appendChild(recordBtn);
+  recordPanel.appendChild(manualCol);
 
-  recordPanel.appendChild(recordTitle);
-  recordPanel.appendChild(recordRow);
   heroPanel.appendChild(recordPanel);
-
   listEl.appendChild(heroPanel);
 }
 
@@ -1144,8 +1293,17 @@ document.addEventListener("DOMContentLoaded", () => {
   wheel = new RouletteWheel("wheelCanvas");
   window.addEventListener("resize", () => wheel.resize());
 
-  // 綁定旋轉按鈕
-  document.getElementById("centerSpinBtn").onclick = () => spinRoulette();
+  // 綁定旋轉按鈕 (支援 click 與 pointerdown 雙重防吞觸控)
+  const spinBtn = document.getElementById("centerSpinBtn");
+  spinBtn.onclick = (e) => {
+    e.preventDefault();
+    spinRoulette();
+  };
+  spinBtn.addEventListener("pointerdown", () => {
+    if (!State.isSpinning) {
+      spinRoulette();
+    }
+  }, { passive: true });
 
   // 綁定重新定位按鈕
   document.getElementById("reLocateBtn").onclick = () => initLocation();

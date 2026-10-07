@@ -1094,19 +1094,142 @@ body {
 .record-box-panel {
   background: #FAF8F5;
   border-top: 1px dashed #EAE4DA;
-  padding-top: 12px;
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.record-box-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #5D544C;
+}
+
+/* Google Maps 贊助商廣告溫馨提示 */
+.gmaps-ad-hint {
+  background: #FFFDF9;
+  border: 1px solid #F1E5D5;
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 11px;
+  color: #8A6D3B;
+  line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* 一鍵記錄品類大按鈕 */
+.record-category-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #4A6B53, #385540);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(74, 107, 83, 0.2);
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.record-category-btn:active {
+  transform: scale(0.98);
+  opacity: 0.95;
+}
+
+/* 常見名店晶片群 */
+.chips-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8C827A;
+  margin-top: 2px;
+}
+
+.store-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.store-chip-btn {
+  background: #FFFFFF;
+  border: 1px solid #DECFC0;
+  border-radius: 14px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4A423B;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: inherit;
+}
+
+.store-chip-btn:active {
+  background: #F3ECE2;
+  border-color: var(--accent-wood);
+  transform: scale(0.96);
+}
+
+.store-chip-btn.is-fav {
+  background: #FFFDF5;
+  border-color: #E2BA72;
+  color: #825816;
+}
+
+.record-divider {
+  height: 1px;
+  border-top: 1px dashed #E5DDD1;
+  margin: 2px 0;
+}
+
+/* 手動輸入區塊 (上下垂直排列) */
+.manual-input-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8C827A;
+}
+
+.manual-input-col {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.record-box-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #6E655C;
+.manual-input-col input {
+  width: 100%;
 }
 
-.record-box-row {
+.record-btn-full {
+  width: 100%;
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--accent-wood);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(184, 139, 88, 0.2);
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.record-btn-full:active {
+  transform: scale(0.98);
+  opacity: 0.95;
 }
