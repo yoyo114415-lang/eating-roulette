@@ -16,8 +16,13 @@
   <!-- 現代安全防禦：Content Security Policy (嚴防 XSS、惡意腳本注入與未授權外連) -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://nominatim.openstreetmap.org https://overpass-api.de https://overpass.kumi.systems; img-src 'self' data: https:; object-src 'none'; base-uri 'self';">
 
-  <!-- 樣式表 -->
-  <link rel="stylesheet" href="style.css">
+  <!-- 防強快取機制：確保手機載入最新版本 -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <!-- 樣式表 (Cache Busting) -->
+  <link rel="stylesheet" href="style.css?v=20261007_v3">
 </head>
 <body>
 
@@ -149,7 +154,7 @@
   <!-- 浮動提示 Toast -->
   <div id="toast" class="toast"></div>
 
-  <!-- 主邏輯程式碼 -->
-  <script src="app.js"></script>
+  <!-- 主邏輯程式碼 (Cache Busting) -->
+  <script src="app.js?v=20261007_v3"></script>
 </body>
 </html>
