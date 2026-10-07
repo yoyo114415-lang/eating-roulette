@@ -978,3 +978,135 @@ body {
     transform: translateY(0);
   }
 }
+
+/* ==========================================================================
+   Google Maps 官方即時生活圈導航面板 (方案 A)
+   ========================================================================== */
+.gmaps-hero-panel {
+  background: #FFFFFF;
+  border: 1.5px solid #EADBC8;
+  border-radius: var(--radius-md);
+  padding: 18px 16px;
+  box-shadow: 0 4px 16px rgba(184, 139, 88, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gmaps-panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gmaps-panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #7A5123;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.gmaps-panel-sub {
+  font-size: 12px;
+  color: #8C827A;
+  line-height: 1.4;
+}
+
+.gmaps-features-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.gmaps-feature-pill {
+  font-size: 11px;
+  font-weight: 600;
+  color: #2E6B47;
+  background: #EAF4EE;
+  border: 1px solid #C4E0CF;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.gmaps-main-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #C49A6C, #A87948);
+  color: #FFFFFF;
+  padding: 13px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(168, 121, 72, 0.22);
+  transition: all 0.2s ease;
+}
+
+.gmaps-main-btn:active {
+  transform: scale(0.98);
+  opacity: 0.95;
+}
+
+.quick-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.quick-filter-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: #FAF8F5;
+  border: 1px solid #EAE4DA;
+  border-radius: var(--radius-sm);
+  padding: 10px 4px;
+  text-decoration: none;
+  color: var(--text-main);
+  transition: all 0.2s ease;
+}
+
+.quick-filter-btn:active {
+  background: #F0EAE1;
+  border-color: var(--accent-wood);
+}
+
+.quick-filter-btn-title {
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.quick-filter-btn-sub {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.record-box-panel {
+  background: #FAF8F5;
+  border-top: 1px dashed #EAE4DA;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.record-box-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6E655C;
+}
+
+.record-box-row {
+  display: flex;
+  gap: 8px;
+}

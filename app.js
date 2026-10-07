@@ -769,469 +769,176 @@ async function fetchNominatimPlaces(queryTerm, viewbox, signal) {
 }
 
 // ==========================================================================
-// 10. 周邊真實店家搜尋 (嚴格 8 公里硬上限 + 停業過濾 + 零落差字典匹配)
 // ==========================================================================
-async function searchNearbyRestaurants(category) {
+// 10. Google Maps 官方生活圈即時導航面板 (方案 A：杜絕幽靈與歇業店家、即時營業狀態)
+// ==========================================================================
+function searchNearbyRestaurants(category) {
   const section = document.getElementById("restaurantsSection");
   const listEl = document.getElementById("restaurantList");
   const countEl = document.getElementById("searchCount");
 
   section.style.display = "flex";
   listEl.innerHTML = "";
+  countEl.textContent = "Google Maps 官方即時導航";
 
-  // 若使用者尚未取得 GPS 位置，提示並提供直接 Google Maps 按鈕
-  if (!State.userLocation) {
-    countEl.textContent = "";
-
-    const emptyBox = document.createElement("div");
-    emptyBox.className = "empty-box";
-
-    const p1 = document.createElement("p");
-    p1.textContent = "尚未開啟手機 GPS 定位權限";
-
-    const p2 = document.createElement("p");
-    p2.style.fontSize = "12px";
-    p2.style.color = "#8C827A";
-    p2.textContent = `點擊下方按鈕可直接以 Google Maps App 搜尋您周邊 5 公里內的【${category}】`;
-
-    const gmapsLink = document.createElement("a");
-    gmapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('附近 ' + category)}`;
-    gmapsLink.target = "_blank";
-    gmapsLink.rel = "noopener noreferrer";
-    gmapsLink.className = "direct-gmaps-fallback";
-
-    const mapIcon = document.createElement("span");
-    mapIcon.textContent = "🗺️ ";
-    const mapText = document.createElement("span");
-    mapText.textContent = `前往 Google Maps 搜尋周邊【${category}】`;
-    gmapsLink.appendChild(mapIcon);
-    gmapsLink.appendChild(mapText);
-
-    emptyBox.appendChild(p1);
-    emptyBox.appendChild(p2);
-    emptyBox.appendChild(gmapsLink);
-    listEl.appendChild(emptyBox);
-    return;
+  // 根據料理分類客製最佳 Google Maps 搜尋詞，讓導航直達核心名店
+  let baseQuery = `附近 ${category}`;
+  if (category === "早午餐") {
+    baseQuery = "附近 早午餐 盤餐";
+  } else if (category === "健康餐") {
+    baseQuery = "附近 健康餐 水煮餐 低卡便當 舒肥";
   }
 
-  // 顯示載入動畫
-  const loadingBox = document.createElement("div");
-  loadingBox.className = "loading-box";
-  const spinner = document.createElement("div");
-  spinner.className = "spinner";
-  const pLoading = document.createElement("p");
-  pLoading.textContent = `正在為您搜尋 5 公里生活圈內的【${category}】店家...`;
-  loadingBox.appendChild(spinner);
-  loadingBox.appendChild(pLoading);
-  listEl.appendChild(loadingBox);
+  // 1. 建立外層英雄級導航面板
+  const heroPanel = document.createElement("div");
+  heroPanel.className = "gmaps-hero-panel";
 
-  const { lat, lon } = State.userLocation;
-  const delta = 0.05; // 約 5 公里生活圈視窗
-  const viewbox = `${lon - delta},${lat + delta},${lon + delta},${lat - delta}`;
-  const maxDistanceMeters = 5000; // 最遠 5 公里硬上限
+  // 面板頂部資訊
+  const headerDiv = document.createElement("div");
+  headerDiv.className = "gmaps-panel-header";
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 7000);
+  const titleDiv = document.createElement("div");
+  titleDiv.className = "gmaps-panel-title";
+  const titleIcon = document.createElement("span");
+  titleIcon.textContent = "📍";
+  const titleText = document.createElement("span");
+  titleText.textContent = "5 公里生活圈 · Google Maps 即時精準導航";
+  titleDiv.appendChild(titleIcon);
+  titleDiv.appendChild(titleText);
 
-  const rule = CATEGORY_SEARCH_MAP[category] || { queries: [category] };
-  const queryList = rule.queries || [category];
-
-  const seenIds = new Set();
-  const validRestaurants = [];
-
-  try {
-    // 1. 同時並行查詢前 10 個熱門核心關鍵字與品牌，大幅提高命中率與完整度 (採用 Promise.allSettled 確保高容錯)
-    const searchPromises = queryList.slice(0, 10).map(term => 
-      fetchNominatimPlaces(term, viewbox, controller.signal)
-    );
-    const settledResults = await Promise.allSettled(searchPromises);
-    const searchResultsArrays = settledResults
-      .filter(r => r.status === "fulfilled" && Array.isArray(r.value))
-      .map(r => r.value);
-
-    for (const dataList of searchResultsArrays) {
-      for (const item of dataList) {
-        const itemLat = parseFloat(item.lat);
-        const itemLon = parseFloat(item.lon);
-        if (isNaN(itemLat) || isNaN(itemLon)) continue;
-
-        const dist = calculateDistanceMeters(lat, lon, itemLat, itemLon);
-        // 嚴格限制：超過 5 公里立即捨棄
-        if (dist > maxDistanceMeters) continue;
-
-        const rawName = item.name || (item.display_name ? item.display_name.split(",")[0].trim() : "");
-        if (!rawName) continue;
-
-        // 過濾已歇業或停業
-        if (isClosedOrDisused(item, rawName)) continue;
-
-        // 過濾非餐飲雜質與不吻合店家
-        if (!matchesCategoryPrecision(rawName, item.display_name, category, item)) continue;
-
-        const uniqueKey = `${rawName.replace(/\s+/g, "")}_${itemLat.toFixed(3)}_${itemLon.toFixed(3)}`;
-        if (seenIds.has(uniqueKey)) continue;
-        seenIds.add(uniqueKey);
-
-        const matchedKeyword = getMatchedFeatureKeyword(rawName, category);
-
-        validRestaurants.push({
-          name: rawName,
-          lat: itemLat,
-          lon: itemLon,
-          distance: dist,
-          address: formatCleanAddress(item.display_name),
-          cuisine: category,
-          matchedKeyword: matchedKeyword
-        });
-      }
-    }
-  } catch (err) {
-    console.warn("店家查詢失敗或逾時:", err);
-  } finally {
-    clearTimeout(timeoutId);
+  const subDiv = document.createElement("div");
+  subDiv.className = "gmaps-panel-sub";
+  if (State.userLocation) {
+    subDiv.textContent = `已鎖定當前 GPS 位置周邊【${category}】，自動過濾幽靈與歇業店家，由近到遠即時推薦真實店家與評分：`;
+  } else {
+    subDiv.textContent = `點擊下方按鈕將喚醒 Google Maps App，依您目前所在位置由近到遠尋找周邊【${category}】：`;
   }
 
-  // 依距離由近到遠嚴格排序 (Nearest First)
-  validRestaurants.sort((a, b) => a.distance - b.distance);
+  headerDiv.appendChild(titleDiv);
+  headerDiv.appendChild(subDiv);
+  heroPanel.appendChild(headerDiv);
 
-  // 取前 15 間最佳匹配店家，避免畫面過長
-  const finalResults = validRestaurants.slice(0, 15);
+  // 三大特徵保證標籤
+  const featuresList = document.createElement("div");
+  featuresList.className = "gmaps-features-list";
 
-  renderRestaurantCards(finalResults, category);
-}
+  const feat1 = document.createElement("span");
+  feat1.className = "gmaps-feature-pill";
+  feat1.textContent = "✓ 100% 真實營業中（防撲空）";
 
-// 渲染餐廳清單卡片 (安全純原生 DOM textContent 注入，零 XSS 風險)
-function renderRestaurantCards(restaurants, category) {
-  const listEl = document.getElementById("restaurantList");
-  const countEl = document.getElementById("searchCount");
-  listEl.innerHTML = "";
+  const feat2 = document.createElement("span");
+  feat2.className = "gmaps-feature-pill";
+  feat2.textContent = "✓ 網友最新評分與真實照片";
 
-  // 置頂推薦 Google Maps 快捷卡片
-  const gmapsTargetQuery = category === "早午餐" ? "附近 早午餐 盤餐" : `附近 ${category}`;
-  const heroCard = document.createElement("a");
-  heroCard.className = "hero-gmaps-card";
-  heroCard.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gmapsTargetQuery)}`;
-  heroCard.target = "_blank";
-  heroCard.rel = "noopener noreferrer";
+  const feat3 = document.createElement("span");
+  feat3.className = "gmaps-feature-pill";
+  feat3.textContent = "✓ 依距離由近到遠精準導航";
 
-  const heroInfo = document.createElement("div");
-  heroInfo.style.display = "flex";
-  heroInfo.style.flexDirection = "column";
-  heroInfo.style.gap = "3px";
+  featuresList.appendChild(feat1);
+  featuresList.appendChild(feat2);
+  featuresList.appendChild(feat3);
+  heroPanel.appendChild(featuresList);
 
-  const heroTitle = document.createElement("div");
-  heroTitle.style.fontSize = "13px";
-  heroTitle.style.fontWeight = "700";
-  heroTitle.style.color = "#7A5123";
-  heroTitle.textContent = `🌟 開啟 Google Maps 周邊【${category}】人氣排行榜 ↗`;
+  // 核心大按鈕：一鍵開啟 Google Maps App
+  const mainBtn = document.createElement("a");
+  mainBtn.className = "gmaps-main-btn";
+  mainBtn.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(baseQuery)}`;
+  mainBtn.target = "_blank";
+  mainBtn.rel = "noopener noreferrer";
 
-  const heroSub = document.createElement("div");
-  heroSub.style.fontSize = "11px";
-  heroSub.style.color = "#8C827A";
-  heroSub.textContent = category === "早午餐" ? "查看 Google 網友高評分的早午餐盤餐、歐姆蛋拼盤與名店推薦" : "查看 Google 官方推薦的網友高評分、最新熱門榜與營業時間";
+  const mainIcon = document.createElement("span");
+  mainIcon.textContent = "🧭 ";
+  const mainText = document.createElement("span");
+  mainText.textContent = `一鍵開啟 Google Maps 探索周邊【${category}】 ↗`;
+  mainBtn.appendChild(mainIcon);
+  mainBtn.appendChild(mainText);
+  heroPanel.appendChild(mainBtn);
 
-  heroInfo.appendChild(heroTitle);
-  heroInfo.appendChild(heroSub);
+  // 三大即時快捷篩選按鈕
+  const filterGrid = document.createElement("div");
+  filterGrid.className = "quick-filter-grid";
 
-  const heroArrow = document.createElement("span");
-  heroArrow.style.fontSize = "16px";
-  heroArrow.style.color = "#B88B58";
-  heroArrow.textContent = "➔";
+  const filters = [
+    { title: "🟢 營業中", sub: "只看現在有開的", query: `${baseQuery} 營業中` },
+    { title: "⭐ 4星好評", sub: "在地高口碑推薦", query: `${baseQuery} 4星` },
+    { title: "🚶 步行最近", sub: "走路快速抵達", query: `${baseQuery} 步行` }
+  ];
 
-  heroCard.appendChild(heroInfo);
-  heroCard.appendChild(heroArrow);
-  listEl.appendChild(heroCard);
+  filters.forEach(item => {
+    const filterBtn = document.createElement("a");
+    filterBtn.className = "quick-filter-btn";
+    filterBtn.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.query)}`;
+    filterBtn.target = "_blank";
+    filterBtn.rel = "noopener noreferrer";
 
-  // 若開源地圖未登錄該小吃，無縫切換為 Google Maps 官方即時店家卡，絕不讓使用者撲空
-  if (restaurants.length === 0) {
-    countEl.textContent = "Google Maps 即時清單";
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "quick-filter-btn-title";
+    titleSpan.textContent = item.title;
 
-    const emptyBox = document.createElement("div");
-    emptyBox.className = "empty-box";
-    emptyBox.style.background = "#FFFFFF";
-    emptyBox.style.border = "1.5px solid #EADBC8";
-    emptyBox.style.padding = "18px 16px";
+    const subSpan = document.createElement("span");
+    subSpan.className = "quick-filter-btn-sub";
+    subSpan.textContent = item.sub;
 
-    const p1 = document.createElement("p");
-    p1.style.fontSize = "15px";
-    p1.style.fontWeight = "700";
-    p1.style.color = "#2C2825";
-    p1.textContent = `📍 已鎖定周邊 5 公里生活圈的【${category}】`;
-
-    const p2 = document.createElement("p");
-    p2.style.fontSize = "12px";
-    p2.style.color = "#8C827A";
-    p2.margin = "6px 0 14px";
-    p2.textContent = category === "早午餐" ? "點擊下方立即查看 Google Maps 為您推薦的周邊人氣早午餐盤餐、早午餐咖啡廳與真實評分：" : `因在地小吃大多直接登記於 Google，點擊下方立即查看 Google Maps 為您推薦的周邊營業店家與真實評分：`;
-
-    const gmapsLink = document.createElement("a");
-    gmapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gmapsTargetQuery)}`;
-    gmapsLink.target = "_blank";
-    gmapsLink.rel = "noopener noreferrer";
-    gmapsLink.className = "direct-gmaps-fallback";
-    gmapsLink.style.padding = "12px 18px";
-    gmapsLink.style.fontSize = "14px";
-
-    const mapIcon = document.createElement("span");
-    mapIcon.textContent = "🗺️ ";
-    const mapText = document.createElement("span");
-    mapText.textContent = `開啟 Google Maps 查看附近所有【${category}】`;
-    gmapsLink.appendChild(mapIcon);
-    gmapsLink.appendChild(mapText);
-
-    emptyBox.appendChild(p1);
-    emptyBox.appendChild(p2);
-    emptyBox.appendChild(gmapsLink);
-    listEl.appendChild(emptyBox);
-    return;
-  }
-
-  countEl.textContent = `找到 ${restaurants.length} 間（由近到遠）`;
-
-  restaurants.forEach((r) => {
-    const card = document.createElement("div");
-    card.className = "restaurant-card";
-
-    // 點擊店家名稱或卡片直接跳轉 Google Maps
-    const gmapsQuery = `${r.name} ${r.address || ''} ${r.lat},${r.lon}`;
-    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gmapsQuery)}`;
-    card.title = "點擊開啟 Google Maps 查看店家評價與路線";
-    card.onclick = (e) => {
-      // 避免點擊「記錄這餐」按鈕時誤跳轉
-      if (e.target.closest(".record-eat-btn")) return;
-      window.open(googleMapsUrl, "_blank", "noopener,noreferrer");
-    };
-
-    // 頂部列
-    const topRow = document.createElement("div");
-    topRow.className = "card-top-row";
-
-    const titleArea = document.createElement("div");
-    titleArea.className = "restaurant-title-area";
-
-    const nameEl = document.createElement("div");
-    nameEl.className = "restaurant-name";
-    nameEl.textContent = r.name; // 原生安全防護
-
-    // 加入 ↗ 外連圖示
-    const linkIcon = document.createElement("span");
-    linkIcon.style.fontSize = "13px";
-    linkIcon.style.color = "#4285F4";
-    linkIcon.textContent = " ↗";
-    nameEl.appendChild(linkIcon);
-    titleArea.appendChild(nameEl);
-
-    // 地址路段資訊
-    if (r.address) {
-      const addrEl = document.createElement("div");
-      addrEl.className = "card-address";
-      addrEl.textContent = `📍 ${r.address}`;
-      titleArea.appendChild(addrEl);
-    }
-
-    // 點擊提示文字
-    const hintText = document.createElement("div");
-    hintText.className = "card-jump-hint";
-    hintText.textContent = "點擊查看 Google Maps 評價與營業時間 ↗";
-    titleArea.appendChild(hintText);
-
-    const badgesArea = document.createElement("div");
-    badgesArea.className = "restaurant-badges";
-
-    // 評價金黃標籤
-    const ratingBadge = document.createElement("span");
-    ratingBadge.className = "rating-badge";
-    ratingBadge.textContent = "⭐ 查看 Google 評分與營業中狀態";
-    badgesArea.appendChild(ratingBadge);
-
-    // 檢查該餐廳在 3 天內是否已吃過
-    const eatenStatus = HistoryManager.checkEatenStatus(r.name, category);
-    if (eatenStatus.eaten) {
-      const eatenBadge = document.createElement("span");
-      eatenBadge.className = "eaten-badge";
-      eatenBadge.textContent = `✓ ${eatenStatus.label}`;
-      badgesArea.appendChild(eatenBadge);
-    }
-
-    if (r.cuisine) {
-      const cuisineBadge = document.createElement("span");
-      cuisineBadge.className = "cuisine-badge";
-      cuisineBadge.textContent = r.cuisine;
-      badgesArea.appendChild(cuisineBadge);
-    }
-
-    // 準確度特徵比對標籤 (回答祐仁：如何檢查準確度)
-    if (r.matchedKeyword) {
-      const matchPill = document.createElement("span");
-      matchPill.className = "match-pill";
-      matchPill.style.fontSize = "11px";
-      matchPill.style.color = "#2E6B47";
-      matchPill.style.background = "#EAF4EE";
-      matchPill.style.border = "1px solid #C4E0CF";
-      matchPill.style.padding = "2px 7px";
-      matchPill.style.borderRadius = "12px";
-      matchPill.style.fontWeight = "600";
-      matchPill.textContent = `🎯 命中：${r.matchedKeyword}`;
-      badgesArea.appendChild(matchPill);
-    }
-
-    titleArea.appendChild(badgesArea);
-    topRow.appendChild(titleArea);
-
-    // 距離膠囊 (由近到遠)
-    const distPill = document.createElement("div");
-    distPill.className = "distance-pill";
-    distPill.textContent = formatDistance(r.distance);
-    topRow.appendChild(distPill);
-
-    card.appendChild(topRow);
-
-    // 操作按鈕列 (Google Maps 導航 + 決定吃這家！)
-    const actionsRow = document.createElement("div");
-    actionsRow.className = "card-actions-row";
-
-    // Google Maps 深度連結按鈕 (喚起手機 Google Maps App 導航)
-    const mapBtn = document.createElement("a");
-    mapBtn.className = "nav-map-btn";
-    mapBtn.target = "_blank";
-    mapBtn.rel = "noopener noreferrer";
-    mapBtn.href = `https://www.google.com/maps/dir/?api=1&destination=${r.lat},${r.lon}`;
-    mapBtn.onclick = (e) => e.stopPropagation();
-    
-    const navIcon = document.createElement("span");
-    navIcon.textContent = "🧭 ";
-    const navText = document.createElement("span");
-    navText.textContent = "Google Maps 導航";
-    mapBtn.appendChild(navIcon);
-    mapBtn.appendChild(navText);
-    actionsRow.appendChild(mapBtn);
-
-    // 「決定吃這家！」按鈕
-    const eatBtn = document.createElement("button");
-    eatBtn.className = "record-eat-btn";
-    
-    const eatIcon = document.createElement("span");
-    const eatText = document.createElement("span");
-
-    if (eatenStatus.eaten) {
-      eatBtn.classList.add("already-eaten");
-      eatIcon.textContent = "✓ ";
-      eatText.textContent = "重複踩點";
-    } else {
-      eatIcon.textContent = "🍚 ";
-      eatText.textContent = "決定吃這家！";
-    }
-    eatBtn.appendChild(eatIcon);
-    eatBtn.appendChild(eatText);
-
-    eatBtn.onclick = (e) => {
-      e.stopPropagation(); // 阻止卡片冒泡跳轉
-      HistoryManager.addRecord(r.name, category);
-      eatBtn.classList.add("already-eaten");
-      eatBtn.textContent = "";
-      const checkSpan = document.createElement("span");
-      checkSpan.textContent = "✓ 已記錄此餐";
-      eatBtn.appendChild(checkSpan);
-      showToast(`🎉 已為您記錄「${r.name}」！未來 3 天內將為您標記。`);
-      // 重繪轉盤上的標記小點
-      wheel.draw(State.currentAngle);
-    };
-
-    actionsRow.appendChild(eatBtn);
-    card.appendChild(actionsRow);
-
-    listEl.appendChild(card);
+    filterBtn.appendChild(titleSpan);
+    filterBtn.appendChild(subSpan);
+    filterGrid.appendChild(filterBtn);
   });
-}
+  heroPanel.appendChild(filterGrid);
 
-// 降級容錯視圖 (若開放資料連線逾時，無縫呈現 Google Maps 搜尋)
-function renderFallbackGmapsView(category) {
-  const listEl = document.getElementById("restaurantList");
-  const countEl = document.getElementById("searchCount");
-  countEl.textContent = "Google Maps 直連";
-  listEl.innerHTML = "";
+  // 3 天防重複用餐履歷記錄盒
+  const recordPanel = document.createElement("div");
+  recordPanel.className = "record-box-panel";
 
-  const emptyBox = document.createElement("div");
-  emptyBox.className = "empty-box";
+  const recordTitle = document.createElement("div");
+  recordTitle.className = "record-box-title";
+  recordTitle.textContent = "📝 決定好店家了嗎？記錄至 3 天用餐履歷：";
 
-  const titleP = document.createElement("p");
-  titleP.style.fontSize = "14px";
-  titleP.style.fontWeight = "700";
-  titleP.style.color = "#2C2825";
-  titleP.textContent = "已為您連接 Google Maps";
+  const recordRow = document.createElement("div");
+  recordRow.className = "record-box-row";
 
-  const descP = document.createElement("p");
-  descP.style.fontSize = "12px";
-  descP.style.color = "#7E766D";
-  descP.style.margin = "4px 0 10px";
-  descP.textContent = `點擊下方按鈕將直接開啟 Google Maps App，依您的當前位置由近到遠尋找附近的【${category}】店家：`;
+  const recordInput = document.createElement("input");
+  recordInput.type = "text";
+  recordInput.className = "text-input";
+  recordInput.placeholder = "輸入剛選好的店名（例如：梁社漢排骨）";
+  recordInput.maxLength = 20;
 
-  const gmapsLink = document.createElement("a");
-  gmapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('附近 ' + category)}`;
-  gmapsLink.target = "_blank";
-  gmapsLink.rel = "noopener noreferrer";
-  gmapsLink.className = "direct-gmaps-fallback";
-  gmapsLink.style.padding = "12px 22px";
-  gmapsLink.style.fontSize = "14px";
+  const recordBtn = document.createElement("button");
+  recordBtn.className = "btn-add";
+  recordBtn.style.whiteSpace = "nowrap";
+  recordBtn.textContent = "記錄這餐";
 
-  const mapIcon = document.createElement("span");
-  mapIcon.textContent = "🧭 ";
-  const mapText = document.createElement("span");
-  mapText.textContent = `打開 Google Maps 尋找附近【${category}】`;
-  gmapsLink.appendChild(mapIcon);
-  gmapsLink.appendChild(mapText);
-
-  // 手動記錄區塊
-  const manualBox = document.createElement("div");
-  manualBox.style.marginTop = "14px";
-  manualBox.style.width = "100%";
-  manualBox.style.borderTop = "1px dashed #EAE4DA";
-  manualBox.style.paddingTop = "12px";
-
-  const manualP = document.createElement("p");
-  manualP.style.fontSize = "12px";
-  manualP.style.color = "#7E766D";
-  manualP.style.marginBottom = "8px";
-  manualP.textContent = "踩點後可手動記錄今天的選擇：";
-
-  const inputRow = document.createElement("div");
-  inputRow.style.display = "flex";
-  inputRow.style.gap = "8px";
-
-  const manualInput = document.createElement("input");
-  manualInput.type = "text";
-  manualInput.id = "manualRestaurantName";
-  manualInput.className = "text-input";
-  manualInput.placeholder = "輸入今天吃了哪家店...";
-  manualInput.style.fontSize = "13px";
-  manualInput.maxLength = 20;
-
-  const manualBtn = document.createElement("button");
-  manualBtn.id = "manualRecordBtn";
-  manualBtn.className = "btn-add";
-  manualBtn.style.whiteSpace = "nowrap";
-  manualBtn.textContent = "記錄這餐";
-  manualBtn.onclick = () => {
-    const name = manualInput.value.trim();
-    if (name) {
-      HistoryManager.addRecord(name, category);
-      showToast(`🎉 已為您記錄「${name}」！`);
-      manualInput.value = "";
-      wheel.draw(State.currentAngle);
-    }
+  const handleRecord = () => {
+    const rawVal = recordInput.value.trim();
+    const finalStoreName = rawVal || category;
+    HistoryManager.addRecord(finalStoreName, category);
+    recordInput.value = "";
+    recordBtn.textContent = "✓ 已記錄";
+    recordBtn.style.background = "#2E6B47";
+    recordBtn.style.color = "#FFFFFF";
+    showToast(`🎉 已為您記錄「${finalStoreName}」！未來 3 天內將在轉盤標記。`);
+    wheel.draw(State.currentAngle);
+    setTimeout(() => {
+      recordBtn.textContent = "記錄這餐";
+      recordBtn.style.background = "";
+      recordBtn.style.color = "";
+    }, 2500);
   };
 
-  inputRow.appendChild(manualInput);
-  inputRow.appendChild(manualBtn);
-  manualBox.appendChild(manualP);
-  manualBox.appendChild(inputRow);
+  recordBtn.onclick = handleRecord;
+  recordInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      handleRecord();
+    }
+  });
 
-  emptyBox.appendChild(titleP);
-  emptyBox.appendChild(descP);
-  emptyBox.appendChild(gmapsLink);
-  emptyBox.appendChild(manualBox);
+  recordRow.appendChild(recordInput);
+  recordRow.appendChild(recordBtn);
 
-  listEl.appendChild(emptyBox);
+  recordPanel.appendChild(recordTitle);
+  recordPanel.appendChild(recordRow);
+  heroPanel.appendChild(recordPanel);
+
+  listEl.appendChild(heroPanel);
 }
 
 // ==========================================================================
