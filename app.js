@@ -955,6 +955,15 @@ function searchNearbyRestaurants(category) {
   recordPanel.appendChild(recordTitle);
 
   // 1. 一鍵極速記錄品類大按鈕
+  const catRecordBtn = document.createElement("button");
+  catRecordBtn.className = "record-category-btn";
+  const catIcon = document.createElement("span");
+  catIcon.textContent = "🍚 ";
+  const catText = document.createElement("span");
+  catText.textContent = `決定今天吃【${category}】！一鍵記錄至履歷`;
+  catRecordBtn.appendChild(catIcon);
+  catRecordBtn.appendChild(catText);
+
   let isCatRecording = false;
   catRecordBtn.onclick = (e) => {
     if (e) e.preventDefault();
