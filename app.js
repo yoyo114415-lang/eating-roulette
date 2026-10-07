@@ -11,14 +11,13 @@
  */
 
 // ==========================================================================
-// 1. 預設 25 種具體單一美食品項與傳統和風配色
+// 1. 預設 21 種具體正餐美食品項與傳統和風配色
 // ==========================================================================
 const DEFAULT_ITEMS = [
   "便當", "定食", "炒飯", "炒麵", "牛肉麵",
-  "拉麵", "烏龍麵", "義大利麵", "燉飯", "咖哩飯",
-  "丼飯", "蛋包飯", "火鍋", "鐵板燒", "滷肉飯",
-  "雞肉飯", "鴨肉飯", "健康餐盒", "水餃", "早午餐",
-  "壽司", "漢堡", "披薩"
+  "拉麵", "烏龍麵", "義大利麵", "咖哩飯", "丼飯",
+  "火鍋", "鐵板燒", "滷肉飯", "雞肉飯", "鴨肉飯",
+  "健康餐", "水餃", "早午餐", "壽司", "漢堡", "披薩"
 ];
 
 // 日系和風柔和色票（練色、白綠、洗朱、藤鼠、薄梅鼠、甕覗、鳥子色、利休白茶）
@@ -43,11 +42,11 @@ const State = {
   // 使用者座標
   userLocation: null, // { lat: number, lon: number }
   isLocating: false,
-  // 搜尋生活圈半徑 (公尺，預設 6 公里涵蓋機車大生活圈)
-  radius: 6000,
+  // 搜尋生活圈半徑 (公尺，5 公里生活圈)
+  radius: 5000,
   // 歷史紀錄資料庫 key
   STORAGE_HISTORY_KEY: "eating_history_records_v1",
-  STORAGE_CUSTOM_ITEMS_KEY: "eating_custom_items_v2",
+  STORAGE_CUSTOM_ITEMS_KEY: "eating_custom_items_v3",
   // 本地已存歷史 [{ name: string, category: string, timestamp: number }]
   history: []
 };
@@ -556,29 +555,19 @@ const CATEGORY_SEARCH_MAP = {
     excludes: ["咖啡", "甜點", "飲料", "麵包", "早午餐", "手搖"]
   },
   "義大利麵": {
-    queries: ["義大利麵", "Pasta", "義式料理"],
+    queries: ["義大利麵", "Pasta", "義式料理", "義麵"],
     matches: ["義大利麵", "義式", "Pasta", "義麵", "斜管麵", "Spaghetti"],
     excludes: ["牛肉麵", "拉麵", "陽春麵", "手搖", "甜點", "麵包", "便當", "熱炒"]
   },
-  "燉飯": {
-    queries: ["燉飯", "Risotto", "義式燉飯"],
-    matches: ["燉飯", "義式", "Risotto", "Pasta", "義大利麵"],
-    excludes: ["便當", "牛肉麵", "拉麵", "咖啡", "甜點", "手搖", "熱炒"]
-  },
   "咖哩飯": {
-    queries: ["咖哩", "日式咖哩", "熟成咖哩", "魔法咖哩"],
-    matches: ["咖哩", "カレー", "Curry", "咖喱"],
+    queries: ["咖哩", "日式咖哩", "熟成咖哩", "魔法咖哩", "CoCo壹番屋"],
+    matches: ["咖哩", "カレー", "Curry", "咖喱", "壹番屋"],
     excludes: ["火鍋", "甜點", "手搖", "麵包", "水餃", "熱炒"]
   },
   "丼飯": {
-    queries: ["丼", "すき家", "吉野家", "松屋", "牛丼"],
+    queries: ["丼", "すき家", "吉野家", "松屋", "牛丼", "燒肉丼"],
     matches: ["丼", "どんぶり", "吉野家", "すき家", "Sukiya", "松屋", "燒肉丼", "親子丼"],
     excludes: ["咖啡", "甜點", "手搖", "麵包", "火鍋", "水餃"]
-  },
-  "蛋包飯": {
-    queries: ["蛋包飯", "日式蛋包飯"],
-    matches: ["蛋包飯", "オムライス", "洋食"],
-    excludes: ["火鍋", "甜點", "手搖", "麵包", "水餃", "拉麵"]
   },
   "火鍋": {
     queries: ["火鍋", "小火鍋", "石二鍋", "六扇門", "錢都", "三媽", "涮涮鍋"],
@@ -591,8 +580,8 @@ const CATEGORY_SEARCH_MAP = {
     excludes: ["火鍋", "拉麵", "咖啡", "甜點", "手搖", "麵包"]
   },
   "滷肉飯": {
-    queries: ["滷肉飯", "魯肉飯", "肉燥飯", "鬍鬚張"],
-    matches: ["滷肉飯", "魯肉飯", "肉燥飯", "小吃", "魯肉", "滷肉", "鬍鬚張"],
+    queries: ["滷肉飯", "魯肉飯", "肉燥飯", "鬍鬚張", "金峰"],
+    matches: ["滷肉飯", "魯肉飯", "肉燥飯", "小吃", "魯肉", "滷肉", "鬍鬚張", "金峰"],
     excludes: ["義大利麵", "披薩", "漢堡", "拉麵", "咖啡", "甜點", "手搖"]
   },
   "雞肉飯": {
@@ -601,14 +590,14 @@ const CATEGORY_SEARCH_MAP = {
     excludes: ["咖啡", "甜點", "手搖", "披薩", "漢堡", "拉麵"]
   },
   "鴨肉飯": {
-    queries: ["鴨肉飯", "當歸鴨", "鴨肉麵線", "鴨肉"],
-    matches: ["鴨肉飯", "鴨肉", "當歸鴨", "烤鴨", "鴨莊"],
+    queries: ["鴨肉飯", "當歸鴨", "鴨肉麵線", "鴨肉", "鴨肉珍"],
+    matches: ["鴨肉飯", "鴨肉", "當歸鴨", "烤鴨", "鴨莊", "鴨肉珍"],
     excludes: ["咖啡", "甜點", "手搖", "披薩", "漢堡", "拉麵"]
   },
-  "健康餐盒": {
-    queries: ["健康餐盒", "低卡便當", "水煮餐", "舒肥便當"],
-    matches: ["健康餐", "低卡", "舒肥", "水煮", "低GI", "蛋白", "少油低卡", "能量盒", "健康便當"],
-    excludes: ["油炸", "火鍋", "甜點", "手搖", "咖啡", "炸雞"]
+  "健康餐": {
+    queries: ["健康餐", "少點鹽", "能量小姐", "隨主飡", "低卡便當", "舒肥便當", "水煮餐"],
+    matches: ["健康餐", "低卡", "舒肥", "水煮", "低GI", "蛋白", "少油低卡", "能量盒", "健康便當", "少點鹽", "能量小姐", "隨主飡", "健康餐盒"],
+    excludes: ["油炸", "火鍋", "甜點", "手搖", "咖啡", "炸雞", "飲料"]
   },
   "水餃": {
     queries: ["水餃", "八方雲集", "四海遊龍", "鍋貼", "餃子"],
@@ -731,7 +720,7 @@ async function searchNearbyRestaurants(category) {
     const p2 = document.createElement("p");
     p2.style.fontSize = "12px";
     p2.style.color = "#8C827A";
-    p2.textContent = `點擊下方按鈕可直接以 Google Maps App 搜尋您周邊 8 公里內的【${category}】`;
+    p2.textContent = `點擊下方按鈕可直接以 Google Maps App 搜尋您周邊 5 公里內的【${category}】`;
 
     const gmapsLink = document.createElement("a");
     gmapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('附近 ' + category)}`;
@@ -759,15 +748,15 @@ async function searchNearbyRestaurants(category) {
   const spinner = document.createElement("div");
   spinner.className = "spinner";
   const pLoading = document.createElement("p");
-  pLoading.textContent = `正在為您搜尋 8 公里生活圈內的【${category}】店家...`;
+  pLoading.textContent = `正在為您搜尋 5 公里生活圈內的【${category}】店家...`;
   loadingBox.appendChild(spinner);
   loadingBox.appendChild(pLoading);
   listEl.appendChild(loadingBox);
 
   const { lat, lon } = State.userLocation;
-  const delta = 0.08; // 約 8 公里生活圈視窗
+  const delta = 0.05; // 約 5 公里生活圈視窗
   const viewbox = `${lon - delta},${lat + delta},${lon + delta},${lat - delta}`;
-  const maxDistanceMeters = 8000; // 最遠 8 公里硬上限
+  const maxDistanceMeters = 5000; // 最遠 5 公里硬上限
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 7000);
@@ -792,7 +781,7 @@ async function searchNearbyRestaurants(category) {
         if (isNaN(itemLat) || isNaN(itemLon)) continue;
 
         const dist = calculateDistanceMeters(lat, lon, itemLat, itemLon);
-        // 嚴格限制：超過 8 公里立即捨棄
+        // 嚴格限制：超過 5 公里立即捨棄
         if (dist > maxDistanceMeters) continue;
 
         const rawName = item.name || (item.display_name ? item.display_name.split(",")[0].trim() : "");
@@ -888,7 +877,7 @@ function renderRestaurantCards(restaurants, category) {
     p1.style.fontSize = "15px";
     p1.style.fontWeight = "700";
     p1.style.color = "#2C2825";
-    p1.textContent = `📍 已鎖定周邊 8 公里生活圈的【${category}】`;
+    p1.textContent = `📍 已鎖定周邊 5 公里生活圈的【${category}】`;
 
     const p2 = document.createElement("p");
     p2.style.fontSize = "12px";
@@ -1302,13 +1291,19 @@ function saveCustomItems() {
 }
 
 function loadCustomItems() {
+  const sanitize = (list) => list
+    .filter(i => i !== "燉飯" && i !== "蛋包飯")
+    .map(i => i === "健康餐盒" ? "健康餐" : i);
+
   try {
-    const raw = localStorage.getItem(State.STORAGE_CUSTOM_ITEMS_KEY);
+    // 優先讀取 v3，若無則讀取舊版 v2 進行自動遷移
+    const raw = localStorage.getItem(State.STORAGE_CUSTOM_ITEMS_KEY) || localStorage.getItem("eating_custom_items_v2");
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed.all && parsed.all.length) {
-        State.allCustomItems = parsed.all;
-        State.activeItems = parsed.active && parsed.active.length ? parsed.active : parsed.all;
+        State.allCustomItems = sanitize(parsed.all);
+        State.activeItems = parsed.active && parsed.active.length ? sanitize(parsed.active) : State.allCustomItems;
+        saveCustomItems();
         return;
       }
     }
@@ -1317,6 +1312,7 @@ function loadCustomItems() {
   }
   State.allCustomItems = [...DEFAULT_ITEMS];
   State.activeItems = [...DEFAULT_ITEMS];
+  saveCustomItems();
 }
 
 // ==========================================================================
