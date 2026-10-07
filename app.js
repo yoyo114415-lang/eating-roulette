@@ -590,8 +590,12 @@ const CATEGORY_SEARCH_MAP = {
     excludes: ["咖啡", "甜點", "手搖", "披薩", "漢堡", "拉麵"]
   },
   "健康餐": {
-    queries: ["舒肥", "健康餐", "低GI", "Poke", "水煮餐", "波奇"],
-    matches: ["健康餐", "舒肥", "低gi", "低GI", "低卡", "水煮", "能量", "poke", "Poke", "波奇", "少點鹽", "隨主飡", "蛋白", "健康便當", "健康餐盒"],
+    queries: ["餐盒", "野餐日", "Mr.布魯", "勁請享用", "能量小姐", "隨主飡", "少點鹽", "給力盒子", "卡洛貍", "Poke"],
+    matches: [
+      "野餐", "野餐日", "野餐•日", "野餐，日", "布魯", "mr.布魯", "mr. blue", "勁請享用",
+      "能量小姐", "miss energy", "隨主飡", "少點鹽", "給力盒子", "卡洛貍", "蛋白盒子",
+      "餐盒", "盒餐", "低gi", "低GI", "低卡", "水煮", "poke", "Poke", "波奇", "健康餐", "健康便當", "健康餐盒"
+    ],
     excludes: ["油炸", "火鍋", "甜點", "手搖", "咖啡", "炸雞", "飲料", "診所", "醫院", "藥局"]
   },
   "水餃": {
@@ -713,9 +717,17 @@ function getMatchedFeatureKeyword(rawName, category) {
       if (m === "brunch" || m === "Brunch") return "Brunch 輕食早午餐";
       if (m === "盤餐" || m === "拼盤" || m === "早午餐盤" || m === "6吋盤" || m === "六吋盤") return "早午餐盤套餐";
       if (m === "貳樓") return "貳樓早午餐";
-      if (m === "舒肥") return "舒肥健康餐";
+      if (m.includes("野餐")) return "野餐，日。";
+      if (m.includes("布魯")) return "Mr.布魯健康餐盒";
+      if (m.includes("勁請享用")) return "勁請享用";
+      if (m.includes("能量小姐") || m.includes("miss energy")) return "能量小姐 (Miss Energy)";
+      if (m.includes("隨主飡")) return "隨主飡水煮專賣";
+      if (m.includes("少點鹽")) return "少點鹽健康餐盒";
+      if (m.includes("給力盒子")) return "給力盒子";
+      if (m.includes("卡洛貍")) return "卡洛貍健康餐盒";
       if (m === "poke" || m === "Poke" || m === "波奇") return "Poke 波奇輕食";
       if (m === "低gi" || m === "低GI" || m === "低卡" || m === "水煮") return "低GI水煮餐";
+      if (m === "餐盒" || m === "盒餐" || m === "健康餐盒") return "健康餐盒";
       if (m === "丼飯" || m === "丼") return "日式丼飯";
       if (m === "燒肉丼") return "燒肉丼專賣";
       if (m === "牛丼") return "日式牛丼";
@@ -828,8 +840,8 @@ async function searchNearbyRestaurants(category) {
   const validRestaurants = [];
 
   try {
-    // 1. 同時並行查詢前 4 個熱門核心關鍵字，大幅提高命中率與完整度 (採用 Promise.allSettled 確保高容錯)
-    const searchPromises = queryList.slice(0, 4).map(term => 
+    // 1. 同時並行查詢前 10 個熱門核心關鍵字與品牌，大幅提高命中率與完整度 (採用 Promise.allSettled 確保高容錯)
+    const searchPromises = queryList.slice(0, 10).map(term => 
       fetchNominatimPlaces(term, viewbox, controller.signal)
     );
     const settledResults = await Promise.allSettled(searchPromises);
