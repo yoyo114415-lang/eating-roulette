@@ -560,8 +560,8 @@ const CATEGORY_SEARCH_MAP = {
     excludes: ["火鍋", "甜點", "手搖", "麵包", "水餃", "熱炒"]
   },
   "丼飯": {
-    queries: ["丼", "すき家", "吉野家", "燒肉丼"],
-    matches: ["丼", "どんぶり", "吉野家", "すき家", "Sukiya", "sukiya", "松屋", "燒肉丼", "親子丼"],
+    queries: ["丼飯", "燒肉丼", "すき家", "吉野家", "松屋", "牛丼"],
+    matches: ["丼飯", "丼", "どんぶり", "吉野家", "すき家", "Sukiya", "sukiya", "松屋", "燒肉丼", "親子丼", "牛丼", "豬排丼", "海鮮丼"],
     excludes: ["咖啡", "甜點", "手搖", "麵包", "火鍋", "水餃"]
   },
   "火鍋": {
@@ -590,9 +590,9 @@ const CATEGORY_SEARCH_MAP = {
     excludes: ["咖啡", "甜點", "手搖", "披薩", "漢堡", "拉麵"]
   },
   "健康餐": {
-    queries: ["健康餐", "少點鹽", "能量小姐", "隨主飡", "低卡便當", "舒肥", "水煮餐"],
-    matches: ["健康餐", "低卡", "舒肥", "水煮", "低GI", "蛋白", "少油低卡", "能量盒", "健康便當", "少點鹽", "能量小姐", "隨主飡", "健康餐盒", "低gi"],
-    excludes: ["油炸", "火鍋", "甜點", "手搖", "咖啡", "炸雞", "飲料"]
+    queries: ["舒肥", "健康餐", "低GI", "Poke", "水煮餐", "波奇"],
+    matches: ["健康餐", "舒肥", "低gi", "低GI", "低卡", "水煮", "能量", "poke", "Poke", "波奇", "少點鹽", "隨主飡", "蛋白", "健康便當", "健康餐盒"],
+    excludes: ["油炸", "火鍋", "甜點", "手搖", "咖啡", "炸雞", "飲料", "診所", "醫院", "藥局"]
   },
   "水餃": {
     queries: ["水餃", "八方雲集", "四海遊龍", "鍋貼", "餃子"],
@@ -642,6 +642,7 @@ function isClosedOrDisused(item, rawName) {
   const textToCheck = `${rawName} ${item.display_name || ""} ${item.type || ""} ${item.class || ""}`.toLowerCase();
   const closedMarkers = [
     "已歇業", "歇業", "永久停業", "停業", "已關閉", "搬遷", "暫停營業", "頂讓", "招租",
+    "已停止營業", "停止營業", "關門", "結束營業", "已遷址", "已拆除",
     "disused", "abandoned", "vacant", "closed", "permanently closed"
   ];
   if (closedMarkers.some(marker => textToCheck.includes(marker))) {
@@ -649,7 +650,7 @@ function isClosedOrDisused(item, rawName) {
   }
   if (item.extratags) {
     if (item.extratags.disused === "yes" || item.extratags.abandoned === "yes") return true;
-    if (item.extratags.operational_status === "closed_permanently") return true;
+    if (item.extratags.operational_status === "closed_permanently" || item.extratags.operational_status === "closed_temporarily") return true;
   }
   return false;
 }
@@ -712,6 +713,12 @@ function getMatchedFeatureKeyword(rawName, category) {
       if (m === "brunch" || m === "Brunch") return "Brunch 輕食早午餐";
       if (m === "盤餐" || m === "拼盤" || m === "早午餐盤" || m === "6吋盤" || m === "六吋盤") return "早午餐盤套餐";
       if (m === "貳樓") return "貳樓早午餐";
+      if (m === "舒肥") return "舒肥健康餐";
+      if (m === "poke" || m === "Poke" || m === "波奇") return "Poke 波奇輕食";
+      if (m === "低gi" || m === "低GI" || m === "低卡" || m === "水煮") return "低GI水煮餐";
+      if (m === "丼飯" || m === "丼") return "日式丼飯";
+      if (m === "燒肉丼") return "燒肉丼專賣";
+      if (m === "牛丼") return "日式牛丼";
       if (m === "鐵板") return "鐵板燒";
       if (m === "牛肉") return "牛肉料理";
       if (m === "鴨肉") return "鴨肉料理";
