@@ -11,13 +11,13 @@
  */
 
 // ==========================================================================
-// 1. 預設 21 種具體正餐美食品項與傳統和風配色
+// 1. 預設 20 種具體正餐美食品項與傳統和風配色
 // ==========================================================================
 const DEFAULT_ITEMS = [
   "便當", "定食", "炒飯", "炒麵", "牛肉麵",
-  "拉麵", "烏龍麵", "義大利麵", "咖哩飯", "丼飯",
-  "火鍋", "鐵板燒", "滷肉飯", "雞肉飯", "鴨肉飯",
-  "健康餐", "水餃", "早午餐", "壽司", "漢堡", "披薩"
+  "拉麵", "義大利麵", "咖哩飯", "丼飯", "火鍋",
+  "鐵板燒", "滷肉飯", "雞肉飯", "鴨肉飯", "健康餐",
+  "水餃", "早午餐", "壽司", "漢堡", "披薩"
 ];
 
 // 日系和風柔和色票（練色、白綠、洗朱、藤鼠、薄梅鼠、甕覗、鳥子色、利休白茶）
@@ -46,7 +46,7 @@ const State = {
   radius: 5000,
   // 歷史紀錄資料庫 key
   STORAGE_HISTORY_KEY: "eating_history_records_v1",
-  STORAGE_CUSTOM_ITEMS_KEY: "eating_custom_items_v3",
+  STORAGE_CUSTOM_ITEMS_KEY: "eating_custom_items_v4",
   // 本地已存歷史 [{ name: string, category: string, timestamp: number }]
   history: []
 };
@@ -549,11 +549,6 @@ const CATEGORY_SEARCH_MAP = {
     matches: ["拉麵", "ラーメン", "豚骨", "雞白湯", "沾麵", "一蘭", "花月嵐", "屯京", "隱家", "麵屋"],
     excludes: ["咖啡", "甜點", "飲料", "麵包", "火鍋", "早午餐", "牛肉麵"]
   },
-  "烏龍麵": {
-    queries: ["烏龍麵", "丸亀", "丸龜製麵", "手打烏龍"],
-    matches: ["烏龍麵", "烏龍", "うどん", "丸亀", "丸龜", "讚岐"],
-    excludes: ["咖啡", "甜點", "飲料", "麵包", "早午餐", "手搖"]
-  },
   "義大利麵": {
     queries: ["義大利麵", "Pasta", "義式料理", "義麵"],
     matches: ["義大利麵", "義式", "Pasta", "義麵", "斜管麵", "Spaghetti"],
@@ -575,17 +570,17 @@ const CATEGORY_SEARCH_MAP = {
     excludes: ["咖啡", "甜點", "手搖", "麵包", "早午餐", "漢堡", "拉麵", "牛排", "義大利麵", "大樓", "百貨"]
   },
   "鐵板燒": {
-    queries: ["鐵板燒", "大埔鐵板燒", "平價鐵板燒"],
-    matches: ["鐵板燒", "鐵板", "大埔", "犇"],
+    queries: ["鐵板", "大埔鐵板燒", "鐵板燒", "Teppanyaki"],
+    matches: ["鐵板", "鐵板燒", "大埔", "犇", "teppanyaki"],
     excludes: ["火鍋", "拉麵", "咖啡", "甜點", "手搖", "麵包"]
   },
   "滷肉飯": {
-    queries: ["滷肉飯", "魯肉飯", "肉燥飯", "鬍鬚張", "金峰"],
+    queries: ["滷肉", "魯肉", "肉燥飯", "滷肉飯"],
     matches: ["滷肉飯", "魯肉飯", "肉燥飯", "小吃", "魯肉", "滷肉", "鬍鬚張", "金峰"],
     excludes: ["義大利麵", "披薩", "漢堡", "拉麵", "咖啡", "甜點", "手搖"]
   },
   "雞肉飯": {
-    queries: ["雞肉飯", "火雞肉飯", "梁社漢"],
+    queries: ["雞肉", "火雞肉飯", "雞肉飯", "梁社漢"],
     matches: ["雞肉飯", "火雞肉飯", "火雞肉", "雞肉", "梁社漢"],
     excludes: ["咖啡", "甜點", "手搖", "披薩", "漢堡", "拉麵"]
   },
@@ -605,8 +600,8 @@ const CATEGORY_SEARCH_MAP = {
     excludes: ["咖啡", "甜點", "手搖", "五金", "服飾", "義大利麵", "漢堡"]
   },
   "早午餐": {
-    queries: ["早午餐", "麥味登", "弘爺漢堡", "拉亞漢堡", "晨間廚房", "Brunch"],
-    matches: ["早午餐", "Brunch", "早餐", "晨間", "麥味登", "弘爺", "拉亞", "美芝城", "吐司", "三明治"],
+    queries: ["早午", "Brunch", "早午餐", "早餐店"],
+    matches: ["早午", "早午餐", "brunch", "早餐", "晨間", "麥味登", "弘爺", "拉亞", "美芝城", "吐司", "三明治", "碳烤吐司"],
     excludes: ["熱炒", "火鍋", "燒烤", "便當", "鐵板燒", "牛肉麵"]
   },
   "壽司": {
@@ -811,8 +806,8 @@ async function searchNearbyRestaurants(category) {
   const validRestaurants = [];
 
   try {
-    // 1. 同時並行查詢前 3 個熱門關鍵字，大幅提高命中率
-    const searchPromises = queryList.slice(0, 3).map(term => 
+    // 1. 同時並行查詢前 4 個熱門核心關鍵字，大幅提高命中率與完整度
+    const searchPromises = queryList.slice(0, 4).map(term => 
       fetchNominatimPlaces(term, viewbox, controller.signal)
     );
     const searchResultsArrays = await Promise.all(searchPromises);
@@ -1353,12 +1348,14 @@ function saveCustomItems() {
 
 function loadCustomItems() {
   const sanitize = (list) => list
-    .filter(i => i !== "燉飯" && i !== "蛋包飯")
+    .filter(i => i !== "燉飯" && i !== "蛋包飯" && i !== "烏龍麵")
     .map(i => i === "健康餐盒" ? "健康餐" : i);
 
   try {
-    // 優先讀取 v3，若無則讀取舊版 v2 進行自動遷移
-    const raw = localStorage.getItem(State.STORAGE_CUSTOM_ITEMS_KEY) || localStorage.getItem("eating_custom_items_v2");
+    // 優先讀取 v4，若無則讀取舊版 v3 / v2 進行自動無縫遷移
+    const raw = localStorage.getItem(State.STORAGE_CUSTOM_ITEMS_KEY) || 
+                localStorage.getItem("eating_custom_items_v3") || 
+                localStorage.getItem("eating_custom_items_v2");
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed.all && parsed.all.length) {
