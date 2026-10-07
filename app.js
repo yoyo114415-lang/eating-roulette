@@ -570,9 +570,9 @@ const CATEGORY_SEARCH_MAP = {
     excludes: ["咖啡", "甜點", "手搖", "麵包", "火鍋", "水餃"]
   },
   "火鍋": {
-    queries: ["火鍋", "小火鍋", "石二鍋", "六扇門", "錢都", "三媽", "涮涮鍋"],
-    matches: ["火鍋", "小火鍋", "鍋物", "涮涮鍋", "麻辣", "石頭火鍋", "鍋", "石二鍋", "六扇門", "錢都", "築間", "肉多多", "三媽"],
-    excludes: ["咖啡", "甜點", "手搖", "麵包", "早午餐", "漢堡", "拉麵"]
+    queries: ["火鍋", "小火鍋", "涮涮鍋", "石二鍋"],
+    matches: ["火鍋", "小火鍋", "鍋物", "涮涮鍋", "麻辣鍋", "石頭火鍋", "石二鍋", "六扇門", "錢都", "築間", "肉多多", "三媽", "涮涮", "鍋"],
+    excludes: ["咖啡", "甜點", "手搖", "麵包", "早午餐", "漢堡", "拉麵", "牛排", "義大利麵", "大樓", "百貨"]
   },
   "鐵板燒": {
     queries: ["鐵板燒", "大埔鐵板燒", "平價鐵板燒"],
@@ -590,8 +590,8 @@ const CATEGORY_SEARCH_MAP = {
     excludes: ["咖啡", "甜點", "手搖", "披薩", "漢堡", "拉麵"]
   },
   "鴨肉飯": {
-    queries: ["鴨肉飯", "當歸鴨", "鴨肉麵線", "鴨肉", "鴨肉珍"],
-    matches: ["鴨肉飯", "鴨肉", "當歸鴨", "烤鴨", "鴨莊", "鴨肉珍"],
+    queries: ["鴨肉", "當歸鴨", "鴨肉飯", "鴨肉羹"],
+    matches: ["鴨肉", "當歸鴨", "鴨肉羹", "鴨莊", "鴨肉麵", "鴨肉冬粉", "鴨肉扁", "鴨肉珍", "鴨肉富", "鴨肉店"],
     excludes: ["咖啡", "甜點", "手搖", "披薩", "漢堡", "拉麵"]
   },
   "健康餐": {
@@ -626,6 +626,22 @@ const CATEGORY_SEARCH_MAP = {
   }
 };
 
+// 檢查是否為合法餐飲設施（剔除大樓、村莊、交流道、診所等雜質）
+function isDiningAmenity(item) {
+  if (!item) return true;
+  const diningTypes = ["restaurant", "fast_food", "cafe", "food_court", "bistro", "pub", "bar"];
+  if (diningTypes.includes(item.type)) return true;
+  if (item.class === "amenity") return true;
+
+  // 明確排除非餐飲地標（如建築、交通、地理、村莊、診所、體育用品等）
+  const nonDiningTypes = ["building", "village", "hamlet", "motorway_junction", "peak", "clinic", "sports", "apartments", "suburb", "town", "place", "highway"];
+  if (nonDiningTypes.includes(item.type) || nonDiningTypes.includes(item.class)) return false;
+
+  const name = (item.name || "").toLowerCase();
+  if (/餐廳|飯館|食堂|小吃|店|館|坊|廚房|料理|餐盒|麵|鍋|快炒|熱炒/.test(name)) return true;
+  return false;
+}
+
 // 檢查是否為已歇業、廢棄或停業店家
 function isClosedOrDisused(item, rawName) {
   const textToCheck = `${rawName} ${item.display_name || ""} ${item.type || ""} ${item.class || ""}`.toLowerCase();
@@ -643,15 +659,20 @@ function isClosedOrDisused(item, rawName) {
   return false;
 }
 
-// 檢查店名是否合格，並排除飲料/超商等雜質
-function matchesCategoryPrecision(rawName, displayName, category) {
+// 嚴格審查店家準確度：餐飲設施檢查 + 通用排除 + 專屬排除 + 特徵詞吻合驗證
+function matchesCategoryPrecision(rawName, displayName, category, item) {
+  // 1. 餐飲設施審查：非餐飲地標一律剔除
+  if (item && !isDiningAmenity(item)) {
+    return false;
+  }
+
   const fullName = `${rawName} ${displayName || ""}`.toLowerCase();
 
-  // 1. 通用排除名單（純飲料店、便利超商、醫療院所、五金等非正餐雜質）
+  // 2. 通用排除名單（純手搖店、便利超商、醫療院所、五金等非正餐雜質）
   const commonExcludes = [
     "50嵐", "五十嵐", "清心福全", "麻古茶坊", "迷客夏", "可不可熟成紅茶", "茶湯會", "珍煮丹", "烏弄",
     "7-eleven", "7-11", "全家便利", "萊爾富", "ok便利", "全聯", "家樂福",
-    "藥局", "診所", "中醫", "眼科", "牙醫", "彩券", "機車行", "汽車修配", "五金行"
+    "藥局", "診所", "中醫", "眼科", "牙醫", "彩券", "機車行", "汽車修配", "五金行", "迪卡儂"
   ];
   if (commonExcludes.some(ex => fullName.includes(ex.toLowerCase()))) {
     return false;
@@ -662,12 +683,34 @@ function matchesCategoryPrecision(rawName, displayName, category) {
     return true;
   }
 
-  // 2. 品項專屬排除關鍵字（例如壽司類排除火鍋）
+  // 3. 品項專屬排除關鍵字
   if (rule.excludes && rule.excludes.some(ex => fullName.includes(ex.toLowerCase()))) {
     return false;
   }
 
+  // 4. 特徵詞吻合驗證（Must Match）：店名必須命中該料理特徵或代表品牌，徹底消除無關選項
+  if (rule.matches && rule.matches.length > 0) {
+    const rawLower = rawName.toLowerCase();
+    const hit = rule.matches.some(m => rawLower.includes(m.toLowerCase()) || fullName.includes(m.toLowerCase()));
+    if (!hit) {
+      return false; // 店名不相干者剔除
+    }
+  }
+
   return true;
+}
+
+// 取得命中特徵詞（用於前端呈現準確度驗證標籤）
+function getMatchedFeatureKeyword(rawName, category) {
+  const rule = CATEGORY_SEARCH_MAP[category];
+  if (!rule || !rule.matches) return category;
+  const rawLower = rawName.toLowerCase();
+  for (const m of rule.matches) {
+    if (rawLower.includes(m.toLowerCase())) {
+      return m;
+    }
+  }
+  return category;
 }
 
 // 清洗與格式化台灣地址路段字串
@@ -790,12 +833,14 @@ async function searchNearbyRestaurants(category) {
         // 過濾已歇業或停業
         if (isClosedOrDisused(item, rawName)) continue;
 
-        // 過濾非餐飲雜質
-        if (!matchesCategoryPrecision(rawName, item.display_name, category)) continue;
+        // 過濾非餐飲雜質與不吻合店家
+        if (!matchesCategoryPrecision(rawName, item.display_name, category, item)) continue;
 
         const uniqueKey = `${rawName.replace(/\s+/g, "")}_${itemLat.toFixed(3)}_${itemLon.toFixed(3)}`;
         if (seenIds.has(uniqueKey)) continue;
         seenIds.add(uniqueKey);
+
+        const matchedKeyword = getMatchedFeatureKeyword(rawName, category);
 
         validRestaurants.push({
           name: rawName,
@@ -803,7 +848,8 @@ async function searchNearbyRestaurants(category) {
           lon: itemLon,
           distance: dist,
           address: formatCleanAddress(item.display_name),
-          cuisine: category
+          cuisine: category,
+          matchedKeyword: matchedKeyword
         });
       }
     }
@@ -979,6 +1025,21 @@ function renderRestaurantCards(restaurants, category) {
       cuisineBadge.className = "cuisine-badge";
       cuisineBadge.textContent = r.cuisine;
       badgesArea.appendChild(cuisineBadge);
+    }
+
+    // 準確度特徵比對標籤 (回答祐仁：如何檢查準確度)
+    if (r.matchedKeyword) {
+      const matchPill = document.createElement("span");
+      matchPill.className = "match-pill";
+      matchPill.style.fontSize = "11px";
+      matchPill.style.color = "#2E6B47";
+      matchPill.style.background = "#EAF4EE";
+      matchPill.style.border = "1px solid #C4E0CF";
+      matchPill.style.padding = "2px 7px";
+      matchPill.style.borderRadius = "12px";
+      matchPill.style.fontWeight = "600";
+      matchPill.textContent = `🎯 命中：${r.matchedKeyword}`;
+      badgesArea.appendChild(matchPill);
     }
 
     titleArea.appendChild(badgesArea);
