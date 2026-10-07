@@ -600,9 +600,9 @@ const CATEGORY_SEARCH_MAP = {
     excludes: ["咖啡", "甜點", "手搖", "五金", "服飾", "義大利麵", "漢堡"]
   },
   "早午餐": {
-    queries: ["早午", "Brunch", "早午餐", "早餐店"],
-    matches: ["早午", "早午餐", "brunch", "Brunch", "早餐", "晨間", "麥味登", "弘爺", "拉亞", "美芝城", "吐司", "三明治", "碳烤吐司", "美而美"],
-    excludes: ["熱炒", "火鍋", "燒烤", "便當", "鐵板燒", "牛肉麵"]
+    queries: ["Brunch", "早午", "早午餐", "貳樓"],
+    matches: ["早午", "早午餐", "brunch", "Brunch", "盤餐", "拼盤", "貳樓", "濰克", "6吋盤", "六吋盤", "輕食", "全日早午餐", "早午餐盤", "咖啡早午餐", "好初", "豐滿", "樂子", "光合箱子"],
+    excludes: ["美而美", "美芝城", "弘爺", "拉亞", "晨間廚房", "麥味登", "永和豆漿", "豆漿", "早點", "早餐店", "純早餐", "熱炒", "火鍋", "燒烤", "便當", "鐵板燒", "牛肉麵"]
   },
   "壽司": {
     queries: ["壽司", "爭鮮", "藏壽司", "壽司郎", "迴轉壽司"],
@@ -708,7 +708,10 @@ function getMatchedFeatureKeyword(rawName, category) {
   const rawLower = rawName.toLowerCase();
   for (const m of rule.matches) {
     if (rawLower.includes(m.toLowerCase())) {
-      if (m === "早午") return "早午餐";
+      if (m === "早午" || m === "早午餐") return "精選早午餐";
+      if (m === "brunch" || m === "Brunch") return "Brunch 輕食早午餐";
+      if (m === "盤餐" || m === "拼盤" || m === "早午餐盤" || m === "6吋盤" || m === "六吋盤") return "早午餐盤套餐";
+      if (m === "貳樓") return "貳樓早午餐";
       if (m === "鐵板") return "鐵板燒";
       if (m === "牛肉") return "牛肉料理";
       if (m === "鴨肉") return "鴨肉料理";
@@ -885,9 +888,10 @@ function renderRestaurantCards(restaurants, category) {
   listEl.innerHTML = "";
 
   // 置頂推薦 Google Maps 快捷卡片
+  const gmapsTargetQuery = category === "早午餐" ? "附近 早午餐 盤餐" : `附近 ${category}`;
   const heroCard = document.createElement("a");
   heroCard.className = "hero-gmaps-card";
-  heroCard.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('附近 ' + category)}`;
+  heroCard.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gmapsTargetQuery)}`;
   heroCard.target = "_blank";
   heroCard.rel = "noopener noreferrer";
 
@@ -905,7 +909,7 @@ function renderRestaurantCards(restaurants, category) {
   const heroSub = document.createElement("div");
   heroSub.style.fontSize = "11px";
   heroSub.style.color = "#8C827A";
-  heroSub.textContent = "查看 Google 官方推薦的網友高評分、最新熱門榜與營業時間";
+  heroSub.textContent = category === "早午餐" ? "查看 Google 網友高評分的早午餐盤餐、歐姆蛋拼盤與名店推薦" : "查看 Google 官方推薦的網友高評分、最新熱門榜與營業時間";
 
   heroInfo.appendChild(heroTitle);
   heroInfo.appendChild(heroSub);
@@ -938,11 +942,11 @@ function renderRestaurantCards(restaurants, category) {
     const p2 = document.createElement("p");
     p2.style.fontSize = "12px";
     p2.style.color = "#8C827A";
-    p2.style.margin = "6px 0 14px";
-    p2.textContent = `因在地小吃大多直接登記於 Google，點擊下方立即查看 Google Maps 為您推薦的周邊營業店家與真實評分：`;
+    p2.margin = "6px 0 14px";
+    p2.textContent = category === "早午餐" ? "點擊下方立即查看 Google Maps 為您推薦的周邊人氣早午餐盤餐、早午餐咖啡廳與真實評分：" : `因在地小吃大多直接登記於 Google，點擊下方立即查看 Google Maps 為您推薦的周邊營業店家與真實評分：`;
 
     const gmapsLink = document.createElement("a");
-    gmapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent('附近 ' + category)}`;
+    gmapsLink.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gmapsTargetQuery)}`;
     gmapsLink.target = "_blank";
     gmapsLink.rel = "noopener noreferrer";
     gmapsLink.className = "direct-gmaps-fallback";
