@@ -110,7 +110,23 @@ const HistoryManager = {
   load() {
     try {
       const raw = localStorage.getItem(State.STORAGE_HISTORY_KEY);
-      State.history = raw ? JSON.parse(raw) : [];
+      let list = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(list)) list = [];
+
+      // 自動清洗舊資料：過濾掉 5 秒內連續產生的同名同品類重複紀錄
+      const deduplicated = [];
+      list.forEach((item) => {
+        const isDupe = deduplicated.some(existing => 
+          existing.name === item.name &&
+          existing.category === item.category &&
+          Math.abs(existing.timestamp - item.timestamp) < 5000
+        );
+        if (!isDupe) {
+          deduplicated.push(item);
+        }
+      });
+
+      State.history = deduplicated;
       this.cleanExpired();
     } catch (e) {
       State.history = [];
@@ -133,13 +149,28 @@ const HistoryManager = {
     this.save();
   },
 
-  // 新增用餐紀錄
+  // 新增用餐紀錄 (包含 5 秒內防重複去重機制)
   addRecord(restaurantName, category) {
+    const now = Date.now();
+    const cleanName = (restaurantName || category || "").trim();
+    if (!cleanName) return;
+
+    // 第一道防線：若 5 秒內剛記錄過完全相同的店名與品類，直接攔截防重複
+    const isRecentDuplicate = State.history.some(h => 
+      h.name === cleanName && 
+      h.category === category && 
+      (now - h.timestamp) < 5000
+    );
+    if (isRecentDuplicate) {
+      console.warn("偵測到短時間內重複記錄請求，已安全攔截去重");
+      return;
+    }
+
     const newRecord = {
-      id: "eat_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
-      name: restaurantName,
+      id: "eat_" + now + "_" + Math.floor(Math.random() * 1000),
+      name: cleanName,
       category: category,
-      timestamp: Date.now()
+      timestamp: now
     };
     // 加在最前面
     State.history.unshift(newRecord);
@@ -924,25 +955,24 @@ function searchNearbyRestaurants(category) {
   recordPanel.appendChild(recordTitle);
 
   // 1. 一鍵極速記錄品類大按鈕
-  const catRecordBtn = document.createElement("button");
-  catRecordBtn.className = "record-category-btn";
-  const catIcon = document.createElement("span");
-  catIcon.textContent = "🍚 ";
-  const catText = document.createElement("span");
-  catText.textContent = `決定今天吃【${category}】！一鍵記錄至履歷`;
-  catRecordBtn.appendChild(catIcon);
-  catRecordBtn.appendChild(catText);
+  let isCatRecording = false;
+  catRecordBtn.onclick = (e) => {
+    if (e) e.preventDefault();
+    if (isCatRecording) return;
+    isCatRecording = true;
+    catRecordBtn.style.pointerEvents = "none";
 
-  catRecordBtn.onclick = () => {
     HistoryManager.addRecord(category, category);
     catRecordBtn.style.background = "#2E6B47";
     catText.textContent = `✓ 已記錄「${category}」！`;
     showToast(`🎉 已為您記錄「${category}」！未來 3 天內將在轉盤標記。`);
     wheel.draw(State.currentAngle);
     setTimeout(() => {
+      isCatRecording = false;
+      catRecordBtn.style.pointerEvents = "";
       catRecordBtn.style.background = "";
       catText.textContent = `決定今天吃【${category}】！一鍵記錄至履歷`;
-    }, 2500);
+    }, 2000);
   };
   recordPanel.appendChild(catRecordBtn);
 
@@ -975,7 +1005,13 @@ function searchNearbyRestaurants(category) {
   recordBtn.appendChild(fullBtnIcon);
   recordBtn.appendChild(fullBtnText);
 
-  const handleManualRecord = () => {
+  let isManualRecording = false;
+  const handleManualRecord = (e) => {
+    if (e) e.preventDefault();
+    if (isManualRecording) return;
+    isManualRecording = true;
+    recordBtn.style.pointerEvents = "none";
+
     const rawVal = recordInput.value.trim();
     const finalStoreName = rawVal || category;
     HistoryManager.addRecord(finalStoreName, category);
@@ -985,15 +1021,18 @@ function searchNearbyRestaurants(category) {
     showToast(`🎉 已為您記錄「${finalStoreName}」！未來 3 天內將在轉盤標記。`);
     wheel.draw(State.currentAngle);
     setTimeout(() => {
+      isManualRecording = false;
+      recordBtn.style.pointerEvents = "";
       recordBtn.style.background = "";
       fullBtnText.textContent = "記錄這餐";
-    }, 2500);
+    }, 2000);
   };
 
   recordBtn.onclick = handleManualRecord;
   recordInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
-      handleManualRecord();
+      e.preventDefault();
+      handleManualRecord(e);
     }
   });
 
